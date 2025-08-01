@@ -1,9 +1,8 @@
 """Reliability metric model for ARES."""
 
 from datetime import datetime
-from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, JSON, String, func
+from sqlalchemy import JSON, DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -18,7 +17,7 @@ class ReliabilityMetric(Base):
     agent_id: Mapped[int] = mapped_column(ForeignKey("agents.id"), nullable=False)
     metric_type: Mapped[str] = mapped_column(String(100), nullable=False)
     metric_value: Mapped[float] = mapped_column(nullable=False)
-    metric_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    metric_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     recorded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

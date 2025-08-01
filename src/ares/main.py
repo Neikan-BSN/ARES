@@ -1,6 +1,7 @@
 """ARES - Agent Reliability Enforcement System Main Application."""
 
 import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -8,7 +9,7 @@ from fastapi.responses import JSONResponse
 from .core.config import settings
 
 try:
-    from .api.routes import agents, health, enforcement
+    from .api.routes import agents, enforcement, health
 except ImportError:
     # Create basic placeholder routers for development
     from fastapi import APIRouter

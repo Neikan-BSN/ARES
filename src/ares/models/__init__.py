@@ -1,8 +1,8 @@
 """ARES Database Models."""
 
 from .agent import Agent
-from .reliability import ReliabilityMetric
 from .enforcement import EnforcementAction
 from .mcp_connection import MCPConnection
+from .reliability import ReliabilityMetric
 
 __all__ = ["Agent", "ReliabilityMetric", "EnforcementAction", "MCPConnection"]

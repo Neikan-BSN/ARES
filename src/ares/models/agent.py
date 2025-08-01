@@ -1,6 +1,5 @@
 """Agent model for ARES."""
 
-from typing import Optional
 
 from sqlalchemy import JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,8 +16,8 @@ class Agent(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     type: Mapped[str] = mapped_column(String(100), nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="inactive")
-    configuration: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    capabilities: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    configuration: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    capabilities: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Relationships
     reliability_metrics = relationship("ReliabilityMetric", back_populates="agent")

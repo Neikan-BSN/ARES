@@ -1,7 +1,5 @@
 """ARES Configuration Management."""
 
-import os
-from typing import Optional
 
 from pydantic_settings import BaseSettings
 
@@ -16,11 +14,11 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "sqlite:///./ares.db"
-    POSTGRES_HOST: Optional[str] = None
+    POSTGRES_HOST: str | None = None
     POSTGRES_PORT: int = 5432
-    POSTGRES_DB: Optional[str] = None
-    POSTGRES_USER: Optional[str] = None
-    POSTGRES_PASSWORD: Optional[str] = None
+    POSTGRES_DB: str | None = None
+    POSTGRES_USER: str | None = None
+    POSTGRES_PASSWORD: str | None = None
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -37,8 +35,8 @@ class Settings(BaseSettings):
     ARES_MCP_DISCOVERY_ENABLED: bool = True
 
     # Security
-    ANTHROPIC_API_KEY: Optional[str] = None
-    OPENAI_API_KEY: Optional[str] = None
+    ANTHROPIC_API_KEY: str | None = None
+    OPENAI_API_KEY: str | None = None
 
     # Server
     RELOAD: bool = True
