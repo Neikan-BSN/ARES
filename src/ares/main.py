@@ -15,17 +15,17 @@ except ImportError:
     from fastapi import APIRouter
     from fastapi.responses import JSONResponse
 
-    health = APIRouter()
-    agents = APIRouter()
-    enforcement = APIRouter()
+    health = APIRouter()  # type: ignore[assignment]
+    agents = APIRouter()  # type: ignore[assignment]
+    enforcement = APIRouter()  # type: ignore[assignment]
 
-    @health.get("/")
+    @health.get("/")  # type: ignore[attr-defined]
     async def health_check():
         return JSONResponse(
             {"status": "healthy", "service": "ARES", "version": "0.1.0"}
         )
 
-    @health.get("/ready")
+    @health.get("/ready")  # type: ignore[attr-defined]
     async def readiness_check():
         return JSONResponse(
             {
@@ -35,11 +35,11 @@ except ImportError:
             }
         )
 
-    @health.get("/live")
+    @health.get("/live")  # type: ignore[attr-defined]
     async def liveness_check():
         return JSONResponse({"status": "alive", "service": "ARES"})
 
-    @agents.get("/")
+    @agents.get("/")  # type: ignore[attr-defined]
     async def list_agents():
         return JSONResponse(
             {
@@ -49,7 +49,7 @@ except ImportError:
             }
         )
 
-    @enforcement.get("/actions")
+    @enforcement.get("/actions")  # type: ignore[attr-defined]
     async def list_enforcement_actions():
         return JSONResponse(
             {
