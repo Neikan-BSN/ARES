@@ -1,0 +1,85 @@
+# Pre-commit hooks for Python project template
+repos:
+  # Ruff for linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.5
+    hooks:
+      # Linter
+      - id: ruff
+        name: Ruff Linting
+        args: [--fix, --exit-non-zero-on-fix]
+        types: [python]
+      # Formatter
+      - id: ruff-format
+        name: Ruff Formatting
+        types: [python]
+
+  # Black for additional formatting
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        name: Black Formatting
+        language_version: python3.12
+        args: [--line-length=88]
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        name: Security Scan (Bandit)
+        args: [-r, src/, -f, json, -o, bandit-report.json]
+        pass_filenames: false
+
+  # Detect secrets to prevent credential leaks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: Detect Secrets
+        args: [--baseline, .secrets.baseline]
+
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+      - id: end-of-file-fixer
+        name: Fix End of Files
+      - id: check-yaml
+        name: Check YAML
+      - id: check-toml
+        name: Check TOML
+      - id: check-json
+        name: Check JSON
+      - id: check-merge-conflict
+        name: Check for Merge Conflicts
+      - id: debug-statements
+        name: Debug Imports and Breakpoints
+
+  # Type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        name: Static Type Checking
+        additional_dependencies: [types-requests, types-pyyaml]
+        args: [--strict, --ignore-missing-imports]
+
+# Configuration
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
+# CI integration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    Applied automated fixes to maintain code quality standards.
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: monthly
+  submodules: false

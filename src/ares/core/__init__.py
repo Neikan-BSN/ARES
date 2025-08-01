@@ -1,0 +1,1 @@
+"""ARES Core module."""

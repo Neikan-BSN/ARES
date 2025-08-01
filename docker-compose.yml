@@ -1,0 +1,336 @@
+# ARES Docker Compose Configuration
+# Agent Reliability Enforcement System Development Environment
+# Based on standardized template with ARES-specific services
+
+version: '3.8'
+
+# ===== NETWORKS =====
+networks:
+  ares-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ===== VOLUMES =====
+volumes:
+  # Database volumes
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  
+  # Application volumes
+  app-logs:
+    driver: local
+  app-uploads:
+    driver: local
+
+# ===== SERVICES =====
+services:
+  # ===== MAIN APPLICATION =====
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        PYTHON_VERSION: 3.11
+        UV_VERSION: 0.4.18
+        PROJECT_NAME: "ares"
+    container_name: "ares-app"
+    ports:
+      - "8000:8000"
+    environment:
+      # Application settings
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      
+      # Database connections
+      - DATABASE_URL=postgresql://postgres:devpass@postgres:5432/ares_dev
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ares_dev
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=devpass
+      
+      # Redis connections
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      
+      # ARES-specific settings
+      - ARES_AGENT_MONITORING_INTERVAL=30
+      - ARES_ENFORCEMENT_ENABLED=true
+      - ARES_MCP_DISCOVERY_ENABLED=true
+      
+      # Security (development only)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      
+      # Development settings
+      - RELOAD=true
+      - WORKERS=1
+    volumes:
+      - .:/app
+      - app-logs:/app/logs
+      - app-uploads:/app/uploads
+      - /app/.venv  # Exclude venv from mount
+    networks:
+      - ares-network
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # ===== DATABASE SERVICES =====
+  postgres:
+    image: postgres:15-alpine
+    container_name: "ares-postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=ares_dev
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=devpass
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - ares-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ares_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+
+  # ===== CACHING & MESSAGE BROKER =====
+  redis:
+    image: redis:7-alpine
+    container_name: "ares-redis"
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    volumes:
+      - redis-data:/data
+    networks:
+      - ares-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ===== BACKGROUND WORKERS =====
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: celery-worker
+    container_name: "ares-celery-worker"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://postgres:devpass@postgres:5432/ares_dev
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      # ARES-specific settings
+      - ARES_AGENT_MONITORING_INTERVAL=30
+      - ARES_ENFORCEMENT_ENABLED=true
+      # Security (development only)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - .:/app
+      - app-logs:/app/logs
+    networks:
+      - ares-network
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ["CMD", "celery", "-A", "src.ares.celery_app", "inspect", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: celery-beat
+    container_name: "ares-celery-beat"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://postgres:devpass@postgres:5432/ares_dev
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    volumes:
+      - .:/app
+      - app-logs:/app/logs
+    networks:
+      - ares-network
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+
+  # ===== MONITORING & OBSERVABILITY =====
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: "ares-prometheus"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - ares-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: "ares-grafana"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - ares-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ===== DEVELOPMENT TOOLS =====
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: "ares-mailhog"
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - ares-network
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: "ares-pgadmin"
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@ares.dev
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - ./config/pgadmin-servers.json:/pgadmin4/servers.json
+    networks:
+      - ares-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # ===== TESTING SERVICES =====
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: testing
+    container_name: "ares-test-runner"
+    environment:
+      - ENVIRONMENT=testing
+      - DEBUG=false
+      - DATABASE_URL=postgresql://postgres:testpass@test-postgres:5432/ares_test
+      - REDIS_URL=redis://test-redis:6379/0
+    volumes:
+      - .:/app
+      - /app/.venv  # Exclude venv from mount
+    networks:
+      - ares-network
+    depends_on:
+      - test-postgres
+      - test-redis
+    command: ["uv", "run", "pytest", "-v", "--cov=src"]
+    profiles:
+      - testing
+
+  test-postgres:
+    image: postgres:15-alpine
+    container_name: "ares-test-postgres"
+    environment:
+      - POSTGRES_DB=ares_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testpass
+    tmpfs:
+      - /var/lib/postgresql/data  # In-memory for faster tests
+    networks:
+      - ares-network
+    profiles:
+      - testing
+
+  test-redis:
+    image: redis:7-alpine
+    container_name: "ares-test-redis"
+    tmpfs:
+      - /data  # In-memory for faster tests
+    networks:
+      - ares-network
+    profiles:
+      - testing
+
+# ===== DEVELOPMENT HELPERS =====
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# Apply default logging to all services
+x-common-variables: &common-variables
+  logging: *default-logging

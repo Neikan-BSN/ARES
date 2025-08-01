@@ -1,0 +1,349 @@
+# ARES - Agent Reliability Enforcement System
+# Standardized UV Workspace pyproject.toml Template v2.0
+# Python >=3.11,<3.14 with Hatchling build system
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ares"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[project]
+name = "ares"
+version = "0.1.0"
+description = "Agent Reliability Enforcement System - Production-ready multi-agent coordination with MCP integration"
+authors = [
+    {name = "ARES Development Team", email = "dev@example.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11,<3.14"
+keywords = ["agents", "mcp", "reliability", "enforcement", "ai", "coordination"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    # Core framework
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.2.0",
+    
+    # Database & Storage
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    "asyncpg>=0.29.0",
+    "redis>=5.0.0",
+    
+    # Utilities
+    "click>=8.1.7",
+    "rich>=13.7.1",
+    "pyyaml>=6.0.1",
+    "python-dotenv>=1.0.1",
+    "structlog>=24.1.0",
+    
+    # HTTP clients
+    "httpx>=0.27.0",
+    "websockets>=12.0",
+    
+    # Agent Framework
+    "celery[redis]>=5.3.0",
+    "kombu>=5.3.0",
+]
+
+[project.optional-dependencies]
+# Core development groups (standardized across workspace)
+test = [
+    "pytest>=8.1.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-benchmark>=4.0.0",
+    "coverage[toml]>=7.4.0",
+    "hypothesis>=6.100.0",
+]
+
+format = [
+    "black>=24.4.0",
+    "isort>=5.13.2",
+]
+
+lint = [
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "types-requests>=2.31.0",
+    "types-pyyaml>=6.0.12",
+    "types-redis>=4.6.0",
+]
+
+security = [
+    "bandit[toml]>=1.7.8",
+    "safety>=3.1.0",
+    "detect-secrets>=1.5.0",
+]
+
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.25.0",
+]
+
+dev = [
+    "pre-commit>=3.7.0",
+]
+
+# ARES-specific dependency groups
+reliability = [
+    "prometheus-client>=0.20.0",
+    "psutil>=5.9.0",
+]
+
+agents = [
+    "openai>=1.30.0",
+    "anthropic>=0.25.0",
+]
+
+# Convenience group that includes everything for development
+all = [
+    "pytest>=8.1.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-benchmark>=4.0.0",
+    "coverage[toml]>=7.4.0",
+    "hypothesis>=6.100.0",
+    "black>=24.4.0",
+    "isort>=5.13.2",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "types-requests>=2.31.0",
+    "types-pyyaml>=6.0.12",
+    "types-redis>=4.6.0",
+    "bandit[toml]>=1.7.8",
+    "safety>=3.1.0",
+    "detect-secrets>=1.5.0",
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.25.0",
+    "pre-commit>=3.7.0",
+    "prometheus-client>=0.20.0",
+    "psutil>=5.9.0",
+    "openai>=1.30.0",
+    "anthropic>=0.25.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/user/ares"
+Repository = "https://github.com/user/ares"
+Issues = "https://github.com/user/ares/issues"
+Documentation = "https://user.github.io/ares"
+
+[project.scripts]
+ares = "ares.cli:main"
+
+# ================================================================================
+# UV CONFIGURATION - CANONICAL VIRTUAL ENVIRONMENT
+# ================================================================================
+[tool.uv]
+managed = true
+package = true
+
+dev-dependencies = [
+    # Development tools
+    "ruff>=0.4.0",
+    "black>=24.4.0",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
+
+    # Testing framework
+    "pytest>=8.1.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "pytest-mock>=3.14.0",
+    "coverage[toml]>=7.4.0",
+
+    # Security scanning
+    "bandit[toml]>=1.7.8",
+    "safety>=3.1.0",
+    "detect-secrets>=1.5.0",
+
+    # Documentation
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.25.0",
+]
+
+# ================================================================================
+# COVERAGE CONFIGURATION
+# ================================================================================
+[tool.coverage.run]
+source = ["src/ares"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+# ================================================================================
+# MYPY CONFIGURATION - PRAGMATIC SETTINGS
+# ================================================================================
+[tool.mypy]
+python_version = "3.11"
+
+# RELAXED settings for real-world development
+disallow_untyped_defs = false          # Don't require types everywhere
+disallow_incomplete_defs = false       # Allow partial typing
+warn_return_any = false                # Don't warn about Any
+warn_unused_ignores = false            # Don't warn about unused ignores
+disallow_untyped_decorators = false    # Don't require decorator typing
+
+# Keep these - they catch real bugs
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+# Useful settings
+ignore_missing_imports = true
+show_error_codes = true
+pretty = true
+
+exclude = ["docs/", "build/", "dist/", ".venv/"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+warn_return_any = false
+
+# ================================================================================
+# BLACK CONFIGURATION
+# ================================================================================
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | docs
+)/
+'''
+
+# ================================================================================
+# ISORT CONFIGURATION
+# ================================================================================
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip_gitignore = true
+skip = ["venv", ".venv", "docs"]
+
+# ================================================================================
+# RUFF CONFIGURATION - PRAGMATIC LINTING
+# ================================================================================
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E4",   # Import errors only
+    "E7",   # Statement errors only
+    "E9",   # Runtime errors only
+    "F",    # Pyflakes (undefined vars, unused imports)
+    "I",    # Import sorting
+    "B",    # Bugbear (likely bugs)
+    "S",    # Security issues
+    "UP",   # Deprecated syntax
+]
+
+ignore = [
+    "E501",    # Line too long (handled by formatter)
+    "S101",    # Use of assert (fine in development)
+    "S105",    # Hardcoded password (too many false positives)
+    "S106",    # Hardcoded password (too many false positives)
+    "S107",    # Hardcoded password (too many false positives)
+    "B008",    # Function calls in defaults (sometimes needed)
+]
+
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    ".venv",
+    "build",
+    "dist",
+    "docs",
+    "*.egg-info",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "B018", "B011"]  # Be lenient in tests
+"scripts/*" = ["S603", "S607"]        # Allow subprocess in scripts
+
+# ================================================================================
+# BANDIT SECURITY CONFIGURATION
+# ================================================================================
+[tool.bandit]
+exclude_dirs = ["tests", "docs", "venv", ".venv"]
+skips = [
+    "B101",  # assert_used (fine in development)
+    "B601",  # paramiko_calls (sometimes needed)  
+    "B602",  # subprocess with shell (sometimes needed)
+]
+
+# ================================================================================
+# PYTEST CONFIGURATION
+# ================================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --cov=src/ares --cov-report=html --cov-report=term-missing"
+asyncio_mode = "auto"
