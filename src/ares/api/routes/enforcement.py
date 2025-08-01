@@ -35,4 +35,3 @@ async def get_reliability_metrics():
             "message": "Reliability metrics endpoint - Implementation in progress",
         }
     )
-

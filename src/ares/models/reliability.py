@@ -31,4 +31,3 @@ class ReliabilityMetric(Base):
             f"<ReliabilityMetric(id={self.id}, agent_id={self.agent_id}, "
             f"type='{self.metric_type}', value={self.metric_value})>"
         )
-

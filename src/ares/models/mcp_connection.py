@@ -31,4 +31,3 @@ class MCPConnection(Base, TimestampMixin):
             f"<MCPConnection(id={self.id}, agent_id={self.agent_id}, "
             f"server='{self.mcp_server_name}', status='{self.connection_status}')>"
         )
-

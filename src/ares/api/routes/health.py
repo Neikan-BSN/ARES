@@ -29,4 +29,3 @@ async def readiness_check():
 async def liveness_check():
     """Liveness check for Kubernetes/Docker."""
     return JSONResponse({"status": "alive", "service": "ARES"})
-

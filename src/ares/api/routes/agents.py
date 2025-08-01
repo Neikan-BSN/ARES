@@ -35,4 +35,3 @@ async def get_agent(agent_id: int):
             "message": "Agent details endpoint - Implementation in progress",
         }
     )
-
