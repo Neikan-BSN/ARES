@@ -49,19 +49,19 @@ COPY pyproject.toml uv.lock* ./
 FROM base AS dependencies
 
 # Install Python dependencies with UV
-RUN uv sync --frozen --no-dev
+RUN /root/.cargo/bin/uv sync --frozen --no-dev
 
 # ===== STAGE 3: Development Dependencies =====
 FROM dependencies AS development-deps
 
 # Install development dependencies
-RUN uv sync --frozen --all-extras
+RUN /root/.cargo/bin/uv sync --frozen --all-extras
 
 # Install additional development tools
-RUN uv tool install black && \
-    uv tool install ruff && \
-    uv tool install mypy && \
-    uv tool install pytest
+RUN /root/.cargo/bin/uv tool install black && \
+    /root/.cargo/bin/uv tool install ruff && \
+    /root/.cargo/bin/uv tool install mypy && \
+    /root/.cargo/bin/uv tool install pytest
 
 # ===== STAGE 4: Application Code =====
 FROM dependencies AS app-base
