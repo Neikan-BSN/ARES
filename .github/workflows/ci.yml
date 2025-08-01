@@ -77,7 +77,7 @@ jobs:
       - name: Detect secrets scan
         run: |
           echo "🔐 Scanning for secrets..."
-          detect-secrets scan --all-files --disable-plugin AbsolutePathDetectorPlugin
+          detect-secrets scan --all-files
 
       - name: Check for unauthorized services
         id: unauthorized-check
