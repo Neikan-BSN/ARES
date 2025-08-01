@@ -1,6 +1,5 @@
 """ARES Configuration Management."""
 
-
 from pydantic_settings import BaseSettings
 
 

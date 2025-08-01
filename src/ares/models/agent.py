@@ -1,6 +1,5 @@
 """Agent model for ARES."""
 
-
 from sqlalchemy import JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
