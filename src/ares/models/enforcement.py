@@ -32,3 +32,4 @@ class EnforcementAction(Base):
             f"<EnforcementAction(id={self.id}, agent_id={self.agent_id}, "
             f"type='{self.action_type}', result='{self.result}')>"
         )
+

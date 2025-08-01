@@ -1,1 +1,2 @@
 """ARES API routes module."""
+

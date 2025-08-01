@@ -4,7 +4,7 @@ import click
 
 
 @click.command()
-@click.option('--verbose', '-v', is_flag=True, help='Verbose output')
+@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
 def main(verbose: bool) -> None:
     """ARES CLI - Agent Reliability Enforcement System."""
     if verbose:
@@ -15,3 +15,4 @@ def main(verbose: bool) -> None:
 
 if __name__ == "__main__":
     main()
+

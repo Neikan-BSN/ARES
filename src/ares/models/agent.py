@@ -27,3 +27,4 @@ class Agent(Base, TimestampMixin):
 
     def __repr__(self) -> str:
         return f"<Agent(id={self.id}, name='{self.name}', type='{self.type}', status='{self.status}')>"
+
