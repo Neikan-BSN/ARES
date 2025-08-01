@@ -1,5 +1,6 @@
 """ARES - Agent Reliability Enforcement System Main Application."""
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -86,9 +87,11 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
+    # Use localhost for development, configurable host for production
+    host = "127.0.0.1" if settings.DEBUG else os.environ.get("HOST", "127.0.0.1")
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host=host,
         port=8000,
         reload=settings.DEBUG,
         log_level="debug" if settings.DEBUG else "info"

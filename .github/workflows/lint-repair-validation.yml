@@ -106,10 +106,15 @@ jobs:
         
         # Run tests if they exist
         if [ -d "tests" ] && [ "$(find tests -name '*.py' | wc -l)" -gt 0 ]; then
-          uv run pytest tests/ -v --tb=short || {
-            echo "❌ Tests failed after lint repairs!"
-            exit 1
-          }
+          # Check if there are actual test functions (not just __init__.py)
+          if grep -r "def test_\|class Test" tests/ --include="*.py" > /dev/null 2>&1; then
+            uv run pytest tests/ -v --tb=short || {
+              echo "❌ Tests failed after lint repairs!"
+              exit 1
+            }
+          else
+            echo "ℹ️ No test functions found in tests directory, skipping test validation"
+          fi
         else
           echo "ℹ️ No tests found, skipping test validation"
         fi
