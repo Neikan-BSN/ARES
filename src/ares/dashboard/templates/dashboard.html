@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ARES</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --ares-primary: #2563eb;
+            --ares-secondary: #64748b;
+            --ares-success: #10b981;
+            --ares-warning: #f59e0b;
+            --ares-danger: #ef4444;
+            --ares-dark: #1e293b;
+        }
+
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--ares-primary) !important;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background: linear-gradient(180deg, var(--ares-primary) 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 2px 0;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-active { background-color: var(--ares-success); }
+        .status-inactive { background-color: var(--ares-secondary); }
+        .status-error { background-color: var(--ares-danger); }
+        .status-warning { background-color: var(--ares-warning); }
+
+        .activity-item {
+            padding: 12px;
+            border-left: 4px solid var(--ares-primary);
+            background: white;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .activity-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 1050;
+            transition: all 0.3s ease;
+        }
+
+        .connection-connected {
+            background-color: var(--ares-success);
+            color: white;
+        }
+
+        .connection-disconnected {
+            background-color: var(--ares-danger);
+            color: white;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-robot me-2"></i>ARES Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-clock me-1"></i>
+                    <span id="current-time"></span>
+                </span>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Connection Status Indicator -->
+    <div id="connection-status" class="connection-status connection-disconnected">
+        <i class="fas fa-wifi me-1"></i>
+        <span id="connection-text">Connecting...</span>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <nav class="nav flex-column">
+                    <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="/dashboard">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a class="nav-link {% if active_page == 'agents' %}active{% endif %}" href="/dashboard/agents">
+                        <i class="fas fa-users me-2"></i>Agents
+                    </a>
+                    <a class="nav-link {% if active_page == 'verification' %}active{% endif %}" href="/dashboard/verification">
+                        <i class="fas fa-check-circle me-2"></i>Verification
+                    </a>
+                    <a class="nav-link {% if active_page == 'analytics' %}active{% endif %}" href="/dashboard/analytics">
+                        <i class="fas fa-chart-line me-2"></i>Analytics
+                    </a>
+                    <hr class="text-white-50">
+                    <a class="nav-link" href="/docs" target="_blank">
+                        <i class="fas fa-book me-2"></i>Documentation
+                    </a>
+                    <a class="nav-link" href="/dashboard/api/health">
+                        <i class="fas fa-heartbeat me-2"></i>Health Check
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Total Agents</h6>
+                                    <div class="stat-value text-primary" id="total-agents">--</div>
+                                </div>
+                                <i class="fas fa-users fa-2x text-primary opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Active Agents</h6>
+                                    <div class="stat-value text-success" id="active-agents">--</div>
+                                </div>
+                                <i class="fas fa-power-off fa-2x text-success opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Verifications Today</h6>
+                                    <div class="stat-value text-info" id="verifications-today">--</div>
+                                </div>
+                                <i class="fas fa-check-circle fa-2x text-info opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Avg Quality Score</h6>
+                                    <div class="stat-value text-warning" id="avg-quality">--</div>
+                                </div>
+                                <i class="fas fa-star fa-2x text-warning opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row mb-4">
+                    <div class="col-lg-8 mb-3">
+                        <div class="chart-container">
+                            <h5 class="mb-3">
+                                <i class="fas fa-chart-line me-2"></i>Quality Trends
+                            </h5>
+                            <canvas id="quality-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <div class="chart-container">
+                            <h5 class="mb-3">
+                                <i class="fas fa-chart-pie me-2"></i>Verification Status
+                            </h5>
+                            <canvas id="status-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity and Agents Row -->
+                <div class="row">
+                    <div class="col-lg-6 mb-3">
+                        <div class="stat-card p-3">
+                            <h5 class="mb-3">
+                                <i class="fas fa-history me-2"></i>Recent Activity
+                                <button class="btn btn-sm btn-outline-primary float-end" onclick="refreshActivity()">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </h5>
+                            <div id="activity-feed" style="max-height: 400px; overflow-y: auto;">
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                                    <p class="mt-2">Loading activity...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <div class="stat-card p-3">
+                            <h5 class="mb-3">
+                                <i class="fas fa-users me-2"></i>Top Performing Agents
+                                <button class="btn btn-sm btn-outline-primary float-end" onclick="refreshAgents()">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </h5>
+                            <div id="top-agents" style="max-height: 400px; overflow-y: auto;">
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                                    <p class="mt-2">Loading agents...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Global variables
+        let ws = null;
+        let qualityChart = null;
+        let statusChart = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+
+            initializeWebSocket();
+            loadDashboardData();
+            initializeCharts();
+
+            // Auto-refresh every 30 seconds as fallback
+            setInterval(loadDashboardData, 30000);
+        });
+
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+        }
+
+        function initializeWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/dashboard/ws`;
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = function(event) {
+                    console.log('WebSocket connected');
+                    updateConnectionStatus(true);
+                    reconnectAttempts = 0;
+
+                    // Subscribe to stats updates
+                    ws.send(JSON.stringify({
+                        type: 'subscribe_stats'
+                    }));
+                };
+
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+
+                ws.onclose = function(event) {
+                    console.log('WebSocket disconnected');
+                    updateConnectionStatus(false);
+
+                    // Attempt to reconnect
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        setTimeout(initializeWebSocket, 5000 * reconnectAttempts);
+                    }
+                };
+
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    updateConnectionStatus(false);
+                };
+
+            } catch (error) {
+                console.error('Failed to initialize WebSocket:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connection-status');
+            const textElement = document.getElementById('connection-text');
+
+            if (connected) {
+                statusElement.className = 'connection-status connection-connected';
+                textElement.textContent = 'Connected';
+            } else {
+                statusElement.className = 'connection-status connection-disconnected pulse';
+                textElement.textContent = 'Disconnected';
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            switch (data.type) {
+                case 'stats_update':
+                case 'stats_broadcast':
+                    updateStats(data.data);
+                    break;
+                case 'verification_completed':
+                    handleVerificationUpdate(data);
+                    break;
+                case 'agent_activity':
+                    handleAgentActivity(data);
+                    break;
+                default:
+                    console.log('Unknown message type:', data.type);
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                // Load stats
+                const statsResponse = await fetch('/dashboard/api/stats');
+                const stats = await statsResponse.json();
+                updateStats(stats);
+
+                // Load activity
+                const activityResponse = await fetch('/dashboard/api/verification/activity?limit=10');
+                const activities = await activityResponse.json();
+                updateActivityFeed(activities);
+
+                // Load top agents
+                const agentsResponse = await fetch('/dashboard/api/agents');
+                const agents = await agentsResponse.json();
+                updateTopAgents(agents.slice(0, 5));
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('total-agents').textContent = stats.total_agents || '--';
+            document.getElementById('active-agents').textContent = stats.active_agents || '--';
+            document.getElementById('verifications-today').textContent = stats.total_verifications_today || '--';
+            document.getElementById('avg-quality').textContent =
+                stats.average_quality_score ? (stats.average_quality_score * 100).toFixed(0) + '%' : '--';
+        }
+
+        function updateActivityFeed(activities) {
+            const feedElement = document.getElementById('activity-feed');
+
+            if (!activities || activities.length === 0) {
+                feedElement.innerHTML = '<div class="text-center text-muted py-4">No recent activity</div>';
+                return;
+            }
+
+            const activityHtml = activities.map(activity => {
+                const timeAgo = getTimeAgo(new Date(activity.timestamp));
+                const statusClass = getStatusClass(activity.status);
+                const icon = getActivityIcon(activity.type);
+
+                return `
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <i class="fas ${icon} me-2 text-${statusClass}"></i>
+                                <strong>${activity.type.replace('_', ' ')}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    Agent: ${activity.agent_id} | Task: ${activity.task_id || 'N/A'}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-${statusClass}">${activity.status}</span>
+                                <br>
+                                <small class="text-muted">${timeAgo}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            feedElement.innerHTML = activityHtml;
+        }
+
+        function updateTopAgents(agents) {
+            const agentsElement = document.getElementById('top-agents');
+
+            if (!agents || agents.length === 0) {
+                agentsElement.innerHTML = '<div class="text-center text-muted py-4">No agent data available</div>';
+                return;
+            }
+
+            const agentsHtml = agents.map(agent => {
+                const statusClass = agent.status === 'active' ? 'success' : 'secondary';
+                const qualityScore = (agent.average_quality_score * 100).toFixed(0);
+                const successRate = (agent.success_rate * 100).toFixed(0);
+
+                return `
+                    <div class="border-bottom py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">
+                                    <span class="status-indicator status-${agent.status}"></span>
+                                    ${agent.name}
+                                </div>
+                                <small class="text-muted">
+                                    ${agent.total_tasks_completed} tasks | ${successRate}% success
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-primary">${qualityScore}%</div>
+                                <small class="text-muted">Quality</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            agentsElement.innerHTML = agentsHtml;
+        }
+
+        function initializeCharts() {
+            // Quality trends line chart
+            const qualityCtx = document.getElementById('quality-chart').getContext('2d');
+            qualityChart = new Chart(qualityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Quality Score',
+                        data: [0.82, 0.85, 0.78, 0.88, 0.84, 0.86, 0.89],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value * 100) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Verification status pie chart
+            const statusCtx = document.getElementById('status-chart').getContext('2d');
+            statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Failed', 'Pending'],
+                    datasets: [{
+                        data: [85, 10, 5],
+                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Helper functions
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+            return `${Math.floor(diffMins / 1440)}d ago`;
+        }
+
+        function getStatusClass(status) {
+            const statusMap = {
+                'completed': 'success',
+                'failed': 'danger',
+                'pending': 'warning',
+                'in_progress': 'info',
+                'error': 'danger'
+            };
+            return statusMap[status] || 'secondary';
+        }
+
+        function getActivityIcon(type) {
+            const iconMap = {
+                'task_completion': 'fa-check-circle',
+                'tool_validation': 'fa-tools',
+                'proof_of_work': 'fa-medal',
+                'behavior_monitoring': 'fa-eye',
+                'rollback_operation': 'fa-undo'
+            };
+            return iconMap[type] || 'fa-circle';
+        }
+
+        function refreshActivity() {
+            loadDashboardData();
+        }
+
+        function refreshAgents() {
+            loadDashboardData();
+        }
+
+        function handleVerificationUpdate(data) {
+            // Add new activity to feed
+            loadDashboardData();
+        }
+
+        function handleAgentActivity(data) {
+            // Update agent status if needed
+            console.log('Agent activity:', data);
+        }
+    </script>
+</body>
+</html>

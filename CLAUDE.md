@@ -1,6 +1,8 @@
 # CLAUDE.md - ARES (Agent Reliability Enforcement System)
 
-This file provides guidance to Claude Code when working with the ARES (Agent Reliability Enforcement System) project - an intelligent agent reliability monitoring and enforcement framework.
+This file provides comprehensive guidance to Claude Code when working with the ARES (Agent Reliability Enforcement System) project. ARES is an intelligent agent reliability monitoring and enforcement framework for AI-assisted development workflows.
+
+**Critical File Preservation Note**: The `.claude/agents/*.md` files contain sub-agent definitions that must NEVER be moved or relocated - they are required to remain in place for the sub-agent system to function properly.
 
 ## Project Overview
 
@@ -397,6 +399,303 @@ ARES/
 - Real-time reliability threshold monitoring
 - Proactive intervention for failing agents
 - Comprehensive reliability reporting and analytics
+
+---
+
+## Complete Command Reference
+
+### Environment Management
+
+```bash
+# Development setup
+uv sync --all-extras              # Install all dependencies including dev tools
+docker compose up -d postgres redis  # Start core services
+uv run alembic upgrade head       # Apply database migrations
+uv run python -m ares.main       # Start ARES server
+
+# Production setup
+docker compose up -d              # Start all services including monitoring
+docker compose logs -f ares-app  # View application logs
+docker compose exec ares-app uv run alembic upgrade head  # Run migrations in container
+```
+
+### Database Operations
+
+```bash
+# Migration management
+uv run alembic revision --autogenerate -m "Description"  # Create new migration
+uv run alembic upgrade head       # Apply migrations
+uv run alembic downgrade -1       # Rollback one migration
+uv run alembic history            # View migration history
+
+# Database inspection
+uv run python -c "from src.ares.models.base import Base; print([t.name for t in Base.metadata.tables.values()])"
+```
+
+### Testing and Quality
+
+```bash
+# Test execution
+uv run pytest                     # Run all tests
+uv run pytest tests/unit/         # Unit tests only
+uv run pytest tests/integration/  # Integration tests only
+uv run pytest --cov=src/ares --cov-report=html  # Coverage report
+uv run pytest -k "test_agent"     # Run specific test patterns
+
+# Code quality
+uv run ruff check                 # Lint code
+uv run ruff format                # Format code
+uv run mypy src/                  # Type checking
+uv run bandit -r src/             # Security scan
+```
+
+### Agent Operations
+
+```bash
+# Agent monitoring
+uv run ares status                           # System status
+uv run ares agents list                      # List all monitored agents
+uv run ares agents metrics --agent code-reviewer  # Agent-specific metrics
+uv run ares tasks active                     # View active tasks
+uv run ares reliability report               # Generate reliability report
+
+# MCP server management
+uv run ares mcp list                         # List available MCP servers
+uv run ares mcp test --server postgresql     # Test MCP server connection
+uv run ares mcp reload                       # Reload MCP server configurations
+```
+
+### Debugging and Troubleshooting
+
+```bash
+# Log analysis
+docker compose logs -f ares-app              # Application logs
+docker compose logs -f ares-postgres         # Database logs
+docker compose logs -f ares-redis           # Cache logs
+
+# Health checks
+curl http://localhost:8000/health            # API health check
+curl http://localhost:8000/metrics           # Prometheus metrics
+uv run ares healthcheck                      # Comprehensive system check
+
+# Database troubleshooting
+docker compose exec ares-postgres psql -U postgres -d ares_dev -c "SELECT * FROM agents LIMIT 5;"
+docker compose exec ares-redis redis-cli ping
+```
+
+## Architecture Deep Dive
+
+### Database Schema
+
+```sql
+-- Core agent tracking
+CREATE TABLE agents (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    capabilities JSONB,
+    status agent_status_enum,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Reliability metrics
+CREATE TABLE reliability_metrics (
+    id UUID PRIMARY KEY,
+    agent_id UUID REFERENCES agents(id),
+    success_rate FLOAT,
+    response_time_avg FLOAT,
+    task_completion_rate FLOAT,
+    recorded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enforcement actions
+CREATE TABLE enforcement_actions (
+    id UUID PRIMARY KEY,
+    agent_id UUID REFERENCES agents(id),
+    action_type enforcement_action_enum,
+    reason TEXT,
+    executed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- MCP connections
+CREATE TABLE mcp_connections (
+    id UUID PRIMARY KEY,
+    server_name VARCHAR(255) NOT NULL,
+    connection_status connection_status_enum,
+    last_ping TIMESTAMP WITH TIME ZONE
+);
+```
+
+### API Endpoints
+
+#### Agent Management
+- `GET /agents` - List all agents with status
+- `GET /agents/{agent_id}` - Get specific agent details
+- `POST /agents/{agent_id}/tasks` - Create new agent task
+- `GET /agents/{agent_id}/metrics` - Get agent reliability metrics
+- `POST /agents/{agent_id}/verify` - Verify task completion
+
+#### Reliability Monitoring
+- `GET /metrics` - System-wide reliability metrics
+- `GET /metrics/agents/{agent_id}` - Agent-specific metrics
+- `POST /enforcement/trigger` - Manual enforcement action
+- `GET /reports/reliability` - Generate reliability report
+
+#### MCP Integration
+- `GET /mcp/servers` - List available MCP servers
+- `POST /mcp/servers/{server}/test` - Test MCP server connection
+- `GET /mcp/tools` - List available tools across servers
+
+### File Structure & Entry Points
+
+```
+src/ares/
+├── main.py                  # FastAPI application entry point
+├── api/                     # REST API routes and handlers
+│   ├── routes/
+│   │   ├── agents.py        # Agent management endpoints
+│   │   ├── enforcement.py   # Enforcement action endpoints
+│   │   └── health.py        # Health check endpoints
+├── core/                    # Core business logic
+│   └── config.py            # Configuration management
+├── models/                  # SQLAlchemy database models
+│   ├── agent.py             # Agent model and schemas
+│   ├── reliability.py       # Reliability metrics model
+│   └── enforcement.py       # Enforcement action model
+├── verification/            # Task verification components
+│   ├── completion/          # Task completion verification
+│   ├── proof_of_work/      # Evidence collection and validation
+│   ├── tool_validation/    # MCP tool usage validation
+│   └── rollback/           # Task rollback management
+├── mcp_server/             # MCP integration layer
+│   ├── client.py           # MCP client implementation
+│   └── server.py           # MCP server implementation
+└── dashboard/              # Web dashboard components
+    ├── router.py           # Dashboard routes
+    └── templates/          # HTML templates
+```
+
+### Integration Patterns
+
+#### MCP Server Usage
+```python
+# Typical MCP integration pattern
+from ares.mcp_server.client import MCPClient
+
+async def verify_with_mcp(task_data: dict) -> bool:
+    async with MCPClient("postgresql") as client:
+        # Store task evidence
+        await client.execute_query(
+            "INSERT INTO task_evidence (task_id, evidence) VALUES ($1, $2)",
+            [task_data["id"], task_data["evidence"]]
+        )
+
+        # Validate with SQLite for caching
+        async with MCPClient("sqlite") as cache_client:
+            result = await cache_client.read_query(
+                "SELECT * FROM validation_cache WHERE task_id = ?",
+                [task_data["id"]]
+            )
+            return result is not None
+```
+
+#### Agent Monitoring Pattern
+```python
+# Real-time agent tracking
+from ares.verification.completion.verifier import CompletionVerifier
+
+verifier = CompletionVerifier()
+
+@agent_task_handler
+async def track_agent_task(agent_name: str, task_description: str):
+    async with verifier.track_task(agent_name, task_description) as tracker:
+        # Agent executes task
+        result = await agent.execute_task()
+
+        # Verify completion
+        verification = await tracker.verify_completion(result)
+
+        if not verification.success:
+            # Trigger enforcement action
+            await enforcement_manager.trigger_action(
+                agent_name,
+                "task_failure",
+                verification.failure_reason
+            )
+```
+
+## Development Best Practices
+
+### ARES-Specific Patterns
+
+1. **Always use agent coordination**: Start with @tech-lead-orchestrator for complex tasks
+2. **Reliability-first approach**: Every feature should include reliability monitoring
+3. **MCP integration**: Leverage MCP servers for data operations and external integrations
+4. **Evidence-based validation**: All agent tasks must provide verifiable proof-of-work
+5. **Real-time monitoring**: Implement WebSocket updates for live system visibility
+
+### Code Quality Standards
+
+- **Type hints required**: All functions must have proper type annotations
+- **Async by default**: Use async/await for all I/O operations
+- **Error handling**: Comprehensive exception handling with proper logging
+- **Testing coverage**: Minimum 90% test coverage for core reliability components
+- **Documentation**: All public APIs must have comprehensive docstrings
+
+### Performance Requirements
+
+- **Response time**: API endpoints must respond within 200ms
+- **Throughput**: System must handle 1000+ concurrent agent tasks
+- **Real-time updates**: WebSocket updates within 100ms of state changes
+- **Database queries**: All queries must be optimized with proper indexing
+
+### Security Considerations
+
+- **Input validation**: All user inputs validated with Pydantic schemas
+- **SQL injection prevention**: Use parameterized queries exclusively
+- **Authentication**: API key or JWT-based authentication for all endpoints
+- **Rate limiting**: Implement rate limiting for public endpoints
+- **Audit logging**: All agent actions must be logged for compliance
+
+## Troubleshooting Guide
+
+### Common Issues
+
+#### Agent Connection Problems
+```bash
+# Check agent registration
+curl http://localhost:8000/agents | jq '.[] | select(.name=="problematic-agent")'
+
+# Verify MCP server connectivity
+uv run ares mcp test --server sqlite
+
+# Check database connectivity
+docker compose exec ares-postgres psql -U postgres -d ares_dev -c "SELECT COUNT(*) FROM agents;"
+```
+
+#### Performance Issues
+```bash
+# Check system resources
+docker compose exec ares-app htop
+
+# Analyze database performance
+docker compose exec ares-postgres psql -U postgres -d ares_dev -c "SELECT * FROM pg_stat_activity;"
+
+# Monitor Redis cache
+docker compose exec ares-redis redis-cli info memory
+```
+
+#### Reliability Metric Anomalies
+```bash
+# Check recent enforcement actions
+uv run ares enforcement history --limit 10
+
+# Analyze reliability trends
+uv run ares metrics trend --agent code-reviewer --days 7
+
+# Validate proof-of-work integrity
+uv run ares validation check --task-id <task_id>
+```
 
 ---
 

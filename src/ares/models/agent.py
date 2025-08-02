@@ -22,6 +22,8 @@ class Agent(Base, TimestampMixin):
     reliability_metrics = relationship("ReliabilityMetric", back_populates="agent")
     enforcement_actions = relationship("EnforcementAction", back_populates="agent")
     mcp_connections = relationship("MCPConnection", back_populates="agent")
+    tasks = relationship("Task", back_populates="agent")
+    documentation_tasks = relationship("DocumentationTask", back_populates="agent")
 
     def __repr__(self) -> str:
         return f"<Agent(id={self.id}, name='{self.name}', type='{self.type}', status='{self.status}')>"

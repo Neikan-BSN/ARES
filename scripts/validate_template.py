@@ -148,8 +148,8 @@ def check_placeholders() -> list[str]:
                     for placeholder in placeholders:
                         if placeholder in content:
                             found_placeholders.append(f"{placeholder} in {file_path}")
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Warning: Could not read file {file_path}: {e}")
 
     return found_placeholders
 

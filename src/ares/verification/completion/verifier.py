@@ -4,24 +4,18 @@ This module implements the primary task completion validation system that ensure
 agent tasks are properly completed according to defined requirements and quality standards.
 """
 
-import asyncio
 import logging
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
-from enum import Enum
+from datetime import UTC, datetime
+from typing import Any
 
-from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.config import settings
-from ...models.agent import Agent
-from ...models.reliability import ReliabilityMetric
 from .schemas import (
+    CompletionStatus,
+    QualityMetrics,
     TaskCompletionRequest,
     TaskCompletionResult,
-    CompletionStatus,
     VerificationEvidence,
-    QualityMetrics,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,7 +38,7 @@ class CompletionVerifier:
             db_session: Async database session for persistence
         """
         self.db_session = db_session
-        self.verification_strategies: Dict[str, Any] = {}
+        self.verification_strategies: dict[str, Any] = {}
         self._quality_thresholds = {
             "code_quality_min": 0.8,
             "test_coverage_min": 0.9,
@@ -68,11 +62,15 @@ class CompletionVerifier:
         Returns:
             TaskCompletionResult with verification status and evidence
         """
-        logger.info(f"Starting task completion verification for agent {agent_id}, task {task_id}")
+        logger.info(
+            f"Starting task completion verification for agent {agent_id}, task {task_id}"
+        )
 
         try:
             # Step 1: Validate input requirements
-            validation_result = await self._validate_completion_request(completion_request)
+            validation_result = await self._validate_completion_request(
+                completion_request
+            )
             if not validation_result.is_valid:
                 return TaskCompletionResult(
                     task_id=task_id,
@@ -81,7 +79,7 @@ class CompletionVerifier:
                     message=validation_result.error_message,
                     quality_metrics=QualityMetrics(),
                     evidence=[],
-                    verification_timestamp=datetime.now(timezone.utc),
+                    verification_timestamp=datetime.now(UTC),
                 )
 
             # Step 2: Gather and analyze evidence
@@ -114,10 +112,12 @@ class CompletionVerifier:
                 task_id=task_id,
                 agent_id=agent_id,
                 status=final_status,
-                message=self._generate_completion_message(final_status, verification_results),
+                message=self._generate_completion_message(
+                    final_status, verification_results
+                ),
                 quality_metrics=quality_metrics,
                 evidence=evidence,
-                verification_timestamp=datetime.now(timezone.utc),
+                verification_timestamp=datetime.now(UTC),
                 verification_details=verification_results,
             )
 
@@ -133,20 +133,26 @@ class CompletionVerifier:
                 message=f"Verification failed: {str(e)}",
                 quality_metrics=QualityMetrics(),
                 evidence=[],
-                verification_timestamp=datetime.now(timezone.utc),
+                verification_timestamp=datetime.now(UTC),
             )
 
     async def _validate_completion_request(
         self, request: TaskCompletionRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate the completion request format and content."""
         try:
             # Basic validation
             if not request.task_description:
-                return {"is_valid": False, "error_message": "Task description is required"}
+                return {
+                    "is_valid": False,
+                    "error_message": "Task description is required",
+                }
 
             if not request.completion_evidence:
-                return {"is_valid": False, "error_message": "Completion evidence is required"}
+                return {
+                    "is_valid": False,
+                    "error_message": "Completion evidence is required",
+                }
 
             # Validate required fields are present
             required_fields = ["outputs", "tool_calls", "performance_metrics"]
@@ -154,7 +160,7 @@ class CompletionVerifier:
                 if field not in request.completion_evidence:
                     return {
                         "is_valid": False,
-                        "error_message": f"Missing required evidence field: {field}"
+                        "error_message": f"Missing required evidence field: {field}",
                     }
 
             return {"is_valid": True, "error_message": None}
@@ -168,7 +174,7 @@ class CompletionVerifier:
         agent_id: str,
         task_id: str,
         request: TaskCompletionRequest,
-    ) -> List[VerificationEvidence]:
+    ) -> list[VerificationEvidence]:
         """Collect evidence for task completion verification."""
         evidence = []
 
@@ -179,7 +185,7 @@ class CompletionVerifier:
                     evidence_type="output_analysis",
                     source="agent_outputs",
                     data=request.completion_evidence["outputs"],
-                    timestamp=datetime.now(timezone.utc),
+                    timestamp=datetime.now(UTC),
                     confidence_score=0.9,
                 )
                 evidence.append(output_evidence)
@@ -190,7 +196,7 @@ class CompletionVerifier:
                     evidence_type="tool_usage",
                     source="mcp_logs",
                     data=request.completion_evidence["tool_calls"],
-                    timestamp=datetime.now(timezone.utc),
+                    timestamp=datetime.now(UTC),
                     confidence_score=0.95,
                 )
                 evidence.append(tool_evidence)
@@ -201,7 +207,7 @@ class CompletionVerifier:
                     evidence_type="performance_metrics",
                     source="system_monitoring",
                     data=request.completion_evidence["performance_metrics"],
-                    timestamp=datetime.now(timezone.utc),
+                    timestamp=datetime.now(UTC),
                     confidence_score=0.98,
                 )
                 evidence.append(perf_evidence)
@@ -214,23 +220,31 @@ class CompletionVerifier:
             return evidence
 
     async def _execute_verification_strategies(
-        self, request: TaskCompletionRequest, evidence: List[VerificationEvidence]
-    ) -> Dict[str, Any]:
+        self, request: TaskCompletionRequest, evidence: list[VerificationEvidence]
+    ) -> dict[str, Any]:
         """Execute different verification strategies based on task type."""
         results = {}
 
         try:
             # Strategy 1: Output Quality Verification
-            results["output_quality"] = await self._verify_output_quality(request, evidence)
+            results["output_quality"] = await self._verify_output_quality(
+                request, evidence
+            )
 
             # Strategy 2: Requirements Matching
-            results["requirements_match"] = await self._verify_requirements_match(request, evidence)
+            results["requirements_match"] = await self._verify_requirements_match(
+                request, evidence
+            )
 
             # Strategy 3: Performance Verification
-            results["performance"] = await self._verify_performance_standards(request, evidence)
+            results["performance"] = await self._verify_performance_standards(
+                request, evidence
+            )
 
             # Strategy 4: Security Compliance
-            results["security"] = await self._verify_security_compliance(request, evidence)
+            results["security"] = await self._verify_security_compliance(
+                request, evidence
+            )
 
             return results
 
@@ -239,8 +253,8 @@ class CompletionVerifier:
             return {"error": str(e)}
 
     async def _verify_output_quality(
-        self, request: TaskCompletionRequest, evidence: List[VerificationEvidence]
-    ) -> Dict[str, Any]:
+        self, request: TaskCompletionRequest, evidence: list[VerificationEvidence]
+    ) -> dict[str, Any]:
         """Verify the quality of task outputs."""
         try:
             output_evidence = next(
@@ -248,7 +262,11 @@ class CompletionVerifier:
             )
 
             if not output_evidence:
-                return {"passed": False, "score": 0.0, "reason": "No output evidence available"}
+                return {
+                    "passed": False,
+                    "score": 0.0,
+                    "reason": "No output evidence available",
+                }
 
             # Analyze output quality metrics
             outputs = output_evidence.data
@@ -286,11 +304,15 @@ class CompletionVerifier:
 
         except Exception as e:
             logger.error(f"Output quality verification error: {str(e)}")
-            return {"passed": False, "score": 0.0, "reason": f"Verification error: {str(e)}"}
+            return {
+                "passed": False,
+                "score": 0.0,
+                "reason": f"Verification error: {str(e)}",
+            }
 
     async def _verify_requirements_match(
-        self, request: TaskCompletionRequest, evidence: List[VerificationEvidence]
-    ) -> Dict[str, Any]:
+        self, request: TaskCompletionRequest, evidence: list[VerificationEvidence]
+    ) -> dict[str, Any]:
         """Verify that outputs match the original task requirements."""
         try:
             # Extract requirements from task description
@@ -302,7 +324,11 @@ class CompletionVerifier:
             )
 
             if not output_evidence:
-                return {"passed": False, "score": 0.0, "reason": "No output evidence available"}
+                return {
+                    "passed": False,
+                    "score": 0.0,
+                    "reason": "No output evidence available",
+                }
 
             outputs = output_evidence.data
             matched_requirements = []
@@ -320,16 +346,22 @@ class CompletionVerifier:
                 "score": match_score,
                 "matched_requirements": matched_requirements,
                 "total_requirements": total_requirements,
-                "missing_requirements": [r for r in requirements if r not in matched_requirements],
+                "missing_requirements": [
+                    r for r in requirements if r not in matched_requirements
+                ],
             }
 
         except Exception as e:
             logger.error(f"Requirements matching error: {str(e)}")
-            return {"passed": False, "score": 0.0, "reason": f"Matching error: {str(e)}"}
+            return {
+                "passed": False,
+                "score": 0.0,
+                "reason": f"Matching error: {str(e)}",
+            }
 
     async def _verify_performance_standards(
-        self, request: TaskCompletionRequest, evidence: List[VerificationEvidence]
-    ) -> Dict[str, Any]:
+        self, request: TaskCompletionRequest, evidence: list[VerificationEvidence]
+    ) -> dict[str, Any]:
         """Verify that task performance meets standards."""
         try:
             perf_evidence = next(
@@ -337,14 +369,18 @@ class CompletionVerifier:
             )
 
             if not perf_evidence:
-                return {"passed": False, "score": 0.0, "reason": "No performance evidence available"}
+                return {
+                    "passed": False,
+                    "score": 0.0,
+                    "reason": "No performance evidence available",
+                }
 
             metrics = perf_evidence.data
             performance_score = 1.0
             issues = []
 
             # Check execution time
-            execution_time = metrics.get("execution_time_ms", float('inf'))
+            execution_time = metrics.get("execution_time_ms", float("inf"))
             if execution_time > self._quality_thresholds["performance_threshold"]:
                 performance_score -= 0.3
                 issues.append(f"Execution time {execution_time}ms exceeds threshold")
@@ -375,11 +411,15 @@ class CompletionVerifier:
 
         except Exception as e:
             logger.error(f"Performance verification error: {str(e)}")
-            return {"passed": False, "score": 0.0, "reason": f"Performance error: {str(e)}"}
+            return {
+                "passed": False,
+                "score": 0.0,
+                "reason": f"Performance error: {str(e)}",
+            }
 
     async def _verify_security_compliance(
-        self, request: TaskCompletionRequest, evidence: List[VerificationEvidence]
-    ) -> Dict[str, Any]:
+        self, request: TaskCompletionRequest, evidence: list[VerificationEvidence]
+    ) -> dict[str, Any]:
         """Verify that task execution meets security standards."""
         try:
             # Security verification logic
@@ -420,32 +460,44 @@ class CompletionVerifier:
 
         except Exception as e:
             logger.error(f"Security verification error: {str(e)}")
-            return {"passed": False, "score": 0.0, "reason": f"Security error: {str(e)}"}
+            return {
+                "passed": False,
+                "score": 0.0,
+                "reason": f"Security error: {str(e)}",
+            }
 
     async def _calculate_quality_metrics(
         self,
         request: TaskCompletionRequest,
-        evidence: List[VerificationEvidence],
-        verification_results: Dict[str, Any],
+        evidence: list[VerificationEvidence],
+        verification_results: dict[str, Any],
     ) -> QualityMetrics:
         """Calculate comprehensive quality metrics for the task completion."""
         try:
             # Extract scores from verification results
-            output_quality_score = verification_results.get("output_quality", {}).get("score", 0.0)
-            requirements_score = verification_results.get("requirements_match", {}).get("score", 0.0)
-            performance_score = verification_results.get("performance", {}).get("score", 0.0)
+            output_quality_score = verification_results.get("output_quality", {}).get(
+                "score", 0.0
+            )
+            requirements_score = verification_results.get("requirements_match", {}).get(
+                "score", 0.0
+            )
+            performance_score = verification_results.get("performance", {}).get(
+                "score", 0.0
+            )
             security_score = verification_results.get("security", {}).get("score", 0.0)
 
             # Calculate overall quality score
             overall_score = (
-                output_quality_score * 0.3 +
-                requirements_score * 0.3 +
-                performance_score * 0.2 +
-                security_score * 0.2
+                output_quality_score * 0.3
+                + requirements_score * 0.3
+                + performance_score * 0.2
+                + security_score * 0.2
             )
 
             # Calculate confidence based on evidence quality
-            evidence_confidence = sum(e.confidence_score for e in evidence) / max(len(evidence), 1)
+            evidence_confidence = sum(e.confidence_score for e in evidence) / max(
+                len(evidence), 1
+            )
 
             return QualityMetrics(
                 overall_score=overall_score,
@@ -454,7 +506,9 @@ class CompletionVerifier:
                 performance_score=performance_score,
                 security_score=security_score,
                 evidence_confidence=evidence_confidence,
-                verification_completeness=self._calculate_completeness(verification_results),
+                verification_completeness=self._calculate_completeness(
+                    verification_results
+                ),
             )
 
         except Exception as e:
@@ -462,7 +516,7 @@ class CompletionVerifier:
             return QualityMetrics()
 
     async def _determine_completion_status(
-        self, verification_results: Dict[str, Any], quality_metrics: QualityMetrics
+        self, verification_results: dict[str, Any], quality_metrics: QualityMetrics
     ) -> CompletionStatus:
         """Determine the final task completion status."""
         try:
@@ -477,8 +531,10 @@ class CompletionVerifier:
                 return CompletionStatus.PARTIAL
 
             # Check individual component scores
-            if (quality_metrics.performance_score < 0.6 or
-                quality_metrics.security_score < 0.8):
+            if (
+                quality_metrics.performance_score < 0.6
+                or quality_metrics.security_score < 0.8
+            ):
                 return CompletionStatus.PARTIAL
 
             return CompletionStatus.COMPLETED
@@ -503,17 +559,19 @@ class CompletionVerifier:
         except Exception as e:
             logger.error(f"Reliability metrics update error: {str(e)}")
 
-    def _extract_requirements(self, task_description: str) -> List[str]:
+    def _extract_requirements(self, task_description: str) -> list[str]:
         """Extract requirements from task description."""
         # Simple requirements extraction - could be enhanced with NLP
         requirements = []
 
         # Look for bullet points, numbered lists, etc.
-        lines = task_description.split('\n')
+        lines = task_description.split("\n")
         for line in lines:
             line = line.strip()
-            if line.startswith(('-', '*', '•')) or any(line.startswith(f"{i}.") for i in range(1, 10)):
-                requirements.append(line.lstrip('-*•0123456789. '))
+            if line.startswith(("-", "*", "•")) or any(
+                line.startswith(f"{i}.") for i in range(1, 10)
+            ):
+                requirements.append(line.lstrip("-*•0123456789. "))
 
         # If no structured requirements found, treat whole description as one requirement
         if not requirements:
@@ -521,7 +579,9 @@ class CompletionVerifier:
 
         return requirements
 
-    def _check_requirement_fulfillment(self, requirement: str, outputs: Dict[str, Any]) -> bool:
+    def _check_requirement_fulfillment(
+        self, requirement: str, outputs: dict[str, Any]
+    ) -> bool:
         """Check if a specific requirement is fulfilled by the outputs."""
         # Simple keyword matching - could be enhanced with semantic analysis
         requirement_lower = requirement.lower()
@@ -533,43 +593,61 @@ class CompletionVerifier:
 
         return matches >= len(key_terms) * 0.6  # 60% of key terms must be present
 
-    def _contains_sensitive_data(self, outputs: Dict[str, Any]) -> bool:
+    def _contains_sensitive_data(self, outputs: dict[str, Any]) -> bool:
         """Check if outputs contain sensitive data."""
         outputs_str = str(outputs).lower()
         sensitive_patterns = [
-            'password', 'secret', 'token', 'key', 'credential',
-            'ssn', 'social security', 'credit card', 'api_key'
+            "password",
+            "secret",
+            "token",
+            "key",
+            "credential",
+            "ssn",
+            "social security",
+            "credit card",
+            "api_key",
         ]
 
         return any(pattern in outputs_str for pattern in sensitive_patterns)
 
-    def _has_unauthorized_tool_usage(self, tool_calls: List[Dict[str, Any]]) -> bool:
+    def _has_unauthorized_tool_usage(self, tool_calls: list[dict[str, Any]]) -> bool:
         """Check for unauthorized tool usage."""
         # Define authorized tools (this could be configurable)
         authorized_tools = {
-            'read_file', 'write_file', 'list_directory', 'run_command',
-            'search_code', 'analyze_code', 'format_code'
+            "read_file",
+            "write_file",
+            "list_directory",
+            "run_command",
+            "search_code",
+            "analyze_code",
+            "format_code",
         }
 
         for call in tool_calls:
-            tool_name = call.get('tool_name', '')
+            tool_name = call.get("tool_name", "")
             if tool_name not in authorized_tools:
                 return True
 
         return False
 
-    def _calculate_completeness(self, verification_results: Dict[str, Any]) -> float:
+    def _calculate_completeness(self, verification_results: dict[str, Any]) -> float:
         """Calculate verification completeness score."""
-        expected_verifications = ["output_quality", "requirements_match", "performance", "security"]
+        expected_verifications = [
+            "output_quality",
+            "requirements_match",
+            "performance",
+            "security",
+        ]
         completed_verifications = [
-            v for v in expected_verifications
+            v
+            for v in expected_verifications
             if v in verification_results and "error" not in verification_results[v]
         ]
 
         return len(completed_verifications) / len(expected_verifications)
 
     def _generate_completion_message(
-        self, status: CompletionStatus, verification_results: Dict[str, Any]
+        self, status: CompletionStatus, verification_results: dict[str, Any]
     ) -> str:
         """Generate a human-readable completion message."""
         if status == CompletionStatus.COMPLETED:
@@ -586,14 +664,14 @@ class CompletionVerifier:
             return "Task completion verification encountered an error."
 
     async def get_verification_history(
-        self, agent_id: Optional[str] = None, limit: int = 100
-    ) -> List[Dict[str, Any]]:
+        self, agent_id: str | None = None, limit: int = 100
+    ) -> list[dict[str, Any]]:
         """Get verification history for analysis."""
         # Placeholder for database query to retrieve verification history
         # This would integrate with the database models
         return []
 
-    async def update_quality_thresholds(self, new_thresholds: Dict[str, float]) -> None:
+    async def update_quality_thresholds(self, new_thresholds: dict[str, float]) -> None:
         """Update quality thresholds for verification."""
         self._quality_thresholds.update(new_thresholds)
         logger.info(f"Updated quality thresholds: {self._quality_thresholds}")

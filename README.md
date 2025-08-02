@@ -1,325 +1,191 @@
-# Python Project Template
+# ARES (Agent Reliability Enforcement System)
 
-A modern Python project template with comprehensive development tools, automation, and best practices.
+Intelligent agent reliability monitoring and enforcement framework for AI-assisted development workflows.
 
-## 🚀 Features
-
-- **Python 3.12.10** setup with UV package manager
-- **Comprehensive code quality tools** (ruff, black, mypy)
-- **Pre-commit hooks** for automated quality checks
-- **Doppler integration** for secure secrets management
-- **GitHub Actions CI/CD** with automated workflows
-- **Comprehensive test suite** with pytest and coverage
-- **Security scanning** with bandit and safety
-- **Documentation** with MkDocs
-- **Interactive setup script** for easy customization
-
-## 📦 Quick Start
-
-### 1. Use This Template
+## 🚀 Quick Start
 
 ```bash
-# Clone or copy this template to your new project directory
-cp -r template_workspace/ my_new_project/
-cd my_new_project/
-
-# Run the interactive setup
-./scripts/setup_project.sh
-```
-
-### 2. Manual Setup (Alternative)
-
-If you prefer manual setup:
-
-```bash
-# Install UV if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Clone and setup
+git clone https://github.com/Neikan-BSN/ARES.git
+cd ARES
 
 # Install dependencies
-make install
+uv sync --all-extras
 
-# Set up Doppler for secrets management
-doppler setup --project your-project-name --config development
+# Start development environment
+docker compose up -d
+
+# Run the application
+uv run python -m ares.main
 ```
 
-## 🛠️ Development Workflow
+## ✨ What is ARES?
 
-### Environment Setup
+ARES monitors AI agents in real-time, validates task completion, and enforces reliability standards through:
+
+- **Task Completion Verification** - Validates agent work with proof-of-work evidence
+- **Behavioral Monitoring** - Tracks performance patterns and detects anomalies
+- **Automated Enforcement** - Triggers rollback and recovery for failed operations
+- **Real-time Dashboard** - Web-based monitoring with live reliability metrics
+- **MCP Integration** - Seamless integration with 14+ Model Context Protocol servers
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   AI Agents     │───▶│   ARES Core      │───▶│   Dashboard     │
+│                 │    │  - Verification  │    │  - Metrics      │
+│ - Code Review   │    │  - Monitoring    │    │  - Alerts       │
+│ - Task Exec     │    │  - Enforcement   │    │  - Analytics    │
+│ - Collaboration │    │  - Recovery      │    │  - Reports      │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                               │
+                       ┌──────────────────┐
+                       │   Data Layer     │
+                       │ - PostgreSQL     │
+                       │ - Redis Cache    │
+                       │ - Event Store    │
+                       └──────────────────┘
+```
+
+## 📦 Installation
+
+### Prerequisites
+- Python 3.11+
+- Docker & Docker Compose
+- Git
+
+### Development Setup
 ```bash
-# Install all dependencies
-make install
+# 1. Clone repository
+git clone https://github.com/Neikan-BSN/ARES.git
+cd ARES
 
-# Install only development dependencies
-make install-dev
+# 2. Install UV package manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 3. Setup environment
+uv sync --all-extras
+docker compose up -d postgres redis
+
+# 4. Run database migrations
+uv run alembic upgrade head
+
+# 5. Start ARES
+uv run python -m ares.main
+```
+
+Visit http://localhost:8000 for the API and http://localhost:8080 for the dashboard.
+
+## 🎯 Basic Usage
+
+### Monitor Agent Tasks
+```python
+from ares import ARESMonitor
+
+# Initialize monitoring
+monitor = ARESMonitor()
+
+# Track agent task execution
+with monitor.track_task("code-reviewer", "Review PR #123"):
+    result = agent.review_pull_request(123)
+    monitor.verify_completion(result)
+```
+
+### CLI Operations
+```bash
+# Check agent status
+uv run ares status
+
+# View reliability metrics
+uv run ares metrics --agent code-reviewer
+
+# Export compliance report
+uv run ares report --format json --output compliance.json
+```
+
+### Web Dashboard
+- **Real-time Monitoring**: Live agent status and performance metrics
+- **Reliability Analytics**: Historical trends and success rates
+- **Task Verification**: Proof-of-work validation and evidence review
+- **Alert Management**: Configure notifications for reliability issues
+
+## 🛠️ Development
+
+### Core Components
+- **CompletionVerifier** - Validates task completion with evidence
+- **AgentBehaviorMonitor** - Tracks behavioral patterns and anomalies
+- **TaskRollbackManager** - Handles failed task recovery and state restoration
+- **ProofOfWorkCollector** - Gathers and validates evidence of work quality
+- **MCPClient** - Integrates with Model Context Protocol servers
+
+### Testing
+```bash
+# Run test suite
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=src/ares --cov-report=html
+
+# Integration tests
+uv run pytest tests/integration/
 ```
 
 ### Code Quality
 ```bash
 # Format code
-make format
+uv run ruff format
 
-# Check formatting
-make format-check
+# Lint code
+uv run ruff check
 
-# Run linting
-make lint
-
-# Fix linting issues automatically
-make lint-fix
+# Type checking
+uv run mypy src/
 ```
-
-### Testing
-```bash
-# Run all tests
-make test
-
-# Run unit tests only
-make test-unit
-
-# Run integration tests
-make test-integration
-```
-
-### Security
-```bash
-# Run security scans
-make security
-
-# Update secrets baseline
-make secrets-update
-```
-
-### Development Server
-```bash
-# Start development server
-make run
-
-# Start API server (if applicable)
-make run-api
-```
-
-## 📋 Available Commands
-
-Run `make help` to see all available commands:
-
-```
-Environment setup:
-  install         Install all dependencies with UV
-  install-dev     Install development dependencies only
-
-Code quality:
-  lint           Run all linting checks
-  format         Format code with black and ruff
-  format-check   Check if code is properly formatted
-  lint-fix       Automatically fix linting issues
-
-Testing:
-  test           Run all tests
-  test-unit      Run unit tests only
-  test-integration Run integration tests
-
-Security:
-  security       Run security scans
-  secrets-update Update secrets baseline
-
-Development:
-  run            Start the development server
-  run-api        Start API server
-  clean          Clean build artifacts and cache
-  dev-reset      Reset development environment
-  ci-check       Run all CI checks locally
-
-Documentation:
-  docs           Generate documentation
-  docs-serve     Serve documentation locally
-  docs-deploy    Deploy documentation
-
-Utilities:
-  backup         Backup project data
-  restore        Restore from backup
-  version        Show current version
-  setup          Run interactive project setup
-```
-
-## 🔐 Environment Variables
-
-This project uses **Doppler** for secrets management. See `.env.doppler.template` for all available configuration options.
-
-### Required Secrets (set in Doppler):
-- `API_SECRET_KEY` - Application secret key
-- `JWT_SECRET_KEY` - JWT signing secret
-
-### Optional Configuration:
-- `DATABASE_URL` - Database connection string
-- `DEBUG` - Debug mode (true/false)
-- `LOG_LEVEL` - Logging level (info, debug, warning, error)
-
-### Doppler Setup:
-```bash
-# Install Doppler CLI
-curl -Ls https://cli.doppler.com/install.sh | sh
-
-# Login and setup
-doppler login
-doppler setup --project your-project-name --config development
-
-# Set required secrets
-doppler secrets set API_SECRET_KEY="your-secret-key"  # pragma: allowlist secret
-doppler secrets set JWT_SECRET_KEY="your-jwt-secret"  # pragma: allowlist secret
-
-# Run with secrets
-doppler run -- python src/ares/main.py
-```
-
-## 🏗️ Project Structure
-
-```
-ares/
-├── src/
-│   └── ares/           # Main package
-│       ├── __init__.py
-│       ├── main.py             # Main application entry
-│       └── cli.py              # Command line interface
-├── tests/                      # Test suite
-│   ├── __init__.py
-│   └── test_main.py
-├── scripts/                    # Utility scripts
-│   └── setup_project.sh        # Interactive setup
-├── docs/                       # Documentation
-├── .github/
-│   └── workflows/              # GitHub Actions
-│       ├── ci.yml              # Main CI/CD pipeline
-│       ├── health-monitor.yml  # Health monitoring
-│       └── lint-repair-validation.yml
-├── config/                     # Configuration files
-├── pyproject.toml             # Dependencies & tool config
-├── Makefile                   # Development automation
-├── .pre-commit-config.yaml    # Pre-commit hooks
-├── .env.doppler.template      # Environment template
-├── .env.DOPPLER_REQUIRED      # Required secrets
-├── .gitignore                 # Git ignore rules
-└── README.md                  # This file
-```
-
-## 🔧 Customization
-
-### Interactive Setup
-The template includes an interactive setup script that customizes the project:
-
-```bash
-./scripts/setup_project.sh
-```
-
-This script will:
-- Prompt for project details (name, description, author, etc.)
-- Customize all template files with your information
-- Set up the Python environment
-- Install dependencies and pre-commit hooks
-- Generate project-specific documentation
-
-### Manual Customization
-If you prefer manual customization, replace the following placeholders:
-
-- `ares` → your actual project name (snake_case)
-- `Agent Reliability Enforcement System` → your project display name
-- `dev@ares.local` → your email address
-- `ARES Development Team` → your name
-- `ares-team` → your GitHub username
-
-## 🚀 GitHub Actions
-
-The template includes comprehensive GitHub Actions workflows:
-
-### CI/CD Pipeline (`ci.yml`)
-- Code quality checks (ruff, black, mypy)
-- Security scanning (bandit, safety)
-- Test execution with coverage
-- Package building
-- Docker image building
-- Automated deployment
-
-### Health Monitor (`health-monitor.yml`)
-- Daily health checks
-- Dependency audits
-- Code quality trend analysis
-- Automated issue creation for problems
-
-### Lint Repair Validation (`lint-repair-validation.yml`)
-- Validates automated lint repairs
-- Ensures fixes don't break functionality
-- Safety validation for repair tools
 
 ## 📚 Documentation
 
-Generate and serve documentation:
-
-```bash
-# Generate documentation
-make docs
-
-# Serve locally at http://localhost:8001
-make docs-serve
-
-# Deploy to GitHub Pages
-make docs-deploy
-```
-
-## 🐳 Docker Support
-
-Build and run with Docker:
-
-```bash
-# Build Docker image
-make docker-build
-
-# Run with Docker Compose
-make docker-run
-```
-
-## 🔒 Security
-
-The template includes comprehensive security measures:
-
-- **Secrets management** with Doppler (no .env files)
-- **Security scanning** with bandit and safety
-- **Dependency vulnerability checks**
-- **Secret detection** with detect-secrets
-- **Pre-commit security hooks**
-
-## 📄 License
-
-This template is provided under the MIT License. Replace with your project's license.
+- [📖 Installation Guide](docs/installation.md) - Detailed setup instructions
+- [🚀 API Reference](docs/api/) - Complete API documentation
+- [🔧 Development Guide](docs/development/) - Contributing and development
+- [📊 Architecture Guide](docs/architecture.md) - System design and patterns
+- [🔍 Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
 
 ## 🤝 Contributing
 
+We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests and linting (`make ci-check`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📞 Support
+## 🏆 Why ARES?
 
-For questions about this template:
+**For AI Development Teams:**
+- ✅ Ensure agent reliability in production environments
+- ✅ Reduce debugging time with comprehensive monitoring
+- ✅ Maintain quality standards with automated enforcement
+- ✅ Get visibility into agent performance and collaboration
 
-- Create an issue in the repository
-- Check the documentation in `docs/`
-- Review the example configurations
+**For DevOps & SRE:**
+- ✅ Monitor AI agent operations like any other service
+- ✅ Set up alerts and automated recovery procedures
+- ✅ Generate compliance reports and audit trails
+- ✅ Integrate with existing observability stacks
 
-## 🎯 Next Steps After Setup
+## 📄 License
 
-1. **Configure Doppler secrets** for your environment
-2. **Set up your GitHub repository** and enable Actions
-3. **Customize the CI/CD pipeline** for your deployment needs
-4. **Add project-specific dependencies** to `pyproject.toml`
-5. **Write your application code** in `src/ares/`
-6. **Add comprehensive tests** in `tests/`
-7. **Update documentation** in `docs/`
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙋 Support
+
+- 📧 **Email**: [support@ares-system.com](mailto:support@ares-system.com)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/Neikan-BSN/ARES/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/Neikan-BSN/ARES/issues)
+- 📖 **Documentation**: [docs.ares-system.com](https://docs.ares-system.com)
 
 ---
 
-**Happy coding!** 🚀
-
-This template provides a solid foundation for modern Python development with best practices, automation, and security built-in.
+Built with ❤️ for reliable AI agent operations.
