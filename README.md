@@ -164,19 +164,19 @@ doppler login
 doppler setup --project your-project-name --config development
 
 # Set required secrets
-doppler secrets set API_SECRET_KEY="your-secret-key"
-doppler secrets set JWT_SECRET_KEY="your-jwt-secret"
+doppler secrets set API_SECRET_KEY="your-secret-key"  # pragma: allowlist secret
+doppler secrets set JWT_SECRET_KEY="your-jwt-secret"  # pragma: allowlist secret
 
 # Run with secrets
-doppler run -- python src/project_name/main.py
+doppler run -- python src/ares/main.py
 ```
 
 ## 🏗️ Project Structure
 
 ```
-project_name/
+ares/
 ├── src/
-│   └── project_name/           # Main package
+│   └── ares/           # Main package
 │       ├── __init__.py
 │       ├── main.py             # Main application entry
 │       └── cli.py              # Command line interface
@@ -220,11 +220,11 @@ This script will:
 ### Manual Customization
 If you prefer manual customization, replace the following placeholders:
 
-- `project_name` → your actual project name (snake_case)
-- `PROJECT_NAME` → your project display name
-- `your.email@example.com` → your email address
-- `Your Name` → your name
-- `your-username` → your GitHub username
+- `ares` → your actual project name (snake_case)
+- `Agent Reliability Enforcement System` → your project display name
+- `dev@ares.local` → your email address
+- `ARES Development Team` → your name
+- `ares-team` → your GitHub username
 
 ## 🚀 GitHub Actions
 
@@ -314,7 +314,7 @@ For questions about this template:
 2. **Set up your GitHub repository** and enable Actions
 3. **Customize the CI/CD pipeline** for your deployment needs
 4. **Add project-specific dependencies** to `pyproject.toml`
-5. **Write your application code** in `src/project_name/`
+5. **Write your application code** in `src/ares/`
 6. **Add comprehensive tests** in `tests/`
 7. **Update documentation** in `docs/`
 

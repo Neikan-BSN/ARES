@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 PYTHON_VERSION="3.12.10"
-TEMPLATE_NAME="project_name"
+TEMPLATE_NAME="ares"
 
 log() {
     echo -e "${BLUE}[$(date '+%H:%M:%S')]${NC} $1"
@@ -54,8 +54,8 @@ gather_project_info() {
     echo ""
 
     # Project name
-    read -p "📦 Project name (snake_case): " PROJECT_NAME
-    if [ -z "$PROJECT_NAME" ]; then
+    read -p "📦 Project name (snake_case): " Agent Reliability Enforcement System
+    if [ -z "$Agent Reliability Enforcement System" ]; then
         error "Project name cannot be empty"
         exit 1
     fi
@@ -63,7 +63,7 @@ gather_project_info() {
     # Project display name
     read -p "📋 Project display name: " PROJECT_DISPLAY_NAME
     if [ -z "$PROJECT_DISPLAY_NAME" ]; then
-        PROJECT_DISPLAY_NAME="$PROJECT_NAME"
+        PROJECT_DISPLAY_NAME="$Agent Reliability Enforcement System"
     fi
 
     # Description
@@ -75,18 +75,18 @@ gather_project_info() {
     # Author information
     read -p "👤 Author name: " AUTHOR_NAME
     if [ -z "$AUTHOR_NAME" ]; then
-        AUTHOR_NAME="Your Name"
+        AUTHOR_NAME="ARES Development Team"
     fi
 
     read -p "📧 Author email: " AUTHOR_EMAIL
     if [ -z "$AUTHOR_EMAIL" ]; then
-        AUTHOR_EMAIL="your.email@example.com"
+        AUTHOR_EMAIL="dev@ares.local"
     fi
 
     # GitHub info
     read -p "🐙 GitHub username/organization: " GITHUB_USER
     if [ -z "$GITHUB_USER" ]; then
-        GITHUB_USER="your-username"
+        GITHUB_USER="ares-team"
     fi
 
     # Package type
@@ -117,7 +117,7 @@ confirm_settings() {
     echo ""
     header "📋 PROJECT CONFIGURATION SUMMARY"
     echo ""
-    echo "Project Name:     $PROJECT_NAME"
+    echo "Project Name:     $Agent Reliability Enforcement System"
     echo "Display Name:     $PROJECT_DISPLAY_NAME"
     echo "Description:      $PROJECT_DESCRIPTION"
     echo "Author:           $AUTHOR_NAME <$AUTHOR_EMAIL>"
@@ -125,7 +125,7 @@ confirm_settings() {
     echo "Project Type:     $TYPE_NAME"
     echo "Python Version:   $PYTHON_VERSION"
     echo ""
-    
+
     read -p "✅ Proceed with this configuration? (y/N): " CONFIRM
     if [[ ! $CONFIRM =~ ^[Yy]$ ]]; then
         log "Setup cancelled by user"
@@ -138,20 +138,20 @@ customize_template() {
     log "Customizing template files..."
 
     # Update pyproject.toml
-    sed -i "s/project_name/$PROJECT_NAME/g" pyproject.toml
-    sed -i "s/A modern Python project template with best practices/$PROJECT_DESCRIPTION/g" pyproject.toml
+    sed -i "s/ares/$Agent Reliability Enforcement System/g" pyproject.toml
+    sed -i "s/Agent Reliability Enforcement System - Production-ready multi-agent coordination with MCP integration/$PROJECT_DESCRIPTION/g" pyproject.toml
 
     # Update Makefile
-    sed -i "s/PROJECT_NAME/$PROJECT_DISPLAY_NAME/g" Makefile
-    sed -i "s/project_name/$PROJECT_NAME/g" Makefile
+    sed -i "s/Agent Reliability Enforcement System/$PROJECT_DISPLAY_NAME/g" Makefile
+    sed -i "s/ares/$Agent Reliability Enforcement System/g" Makefile
 
     # Update Doppler template
-    sed -i "s/project_name/$PROJECT_NAME/g" .env.doppler.template
-    sed -i "s/PROJECT_NAME/$PROJECT_DISPLAY_NAME/g" .env.doppler.template
+    sed -i "s/ares/$Agent Reliability Enforcement System/g" .env.doppler.template
+    sed -i "s/Agent Reliability Enforcement System/$PROJECT_DISPLAY_NAME/g" .env.doppler.template
 
     # Rename source directory
-    if [ -d "src/project_name" ]; then
-        mv "src/project_name" "src/$PROJECT_NAME"
+    if [ -d "src/ares" ]; then
+        mv "src/ares" "src/$Agent Reliability Enforcement System"
     fi
 
     success "Template files customized"
@@ -181,7 +181,7 @@ create_source_files() {
     log "Creating initial source files..."
 
     # Create __init__.py
-    cat > "src/$PROJECT_NAME/__init__.py" << EOF
+    cat > "src/$Agent Reliability Enforcement System/__init__.py" << EOF
 """$PROJECT_DISPLAY_NAME - $PROJECT_DESCRIPTION"""
 
 __version__ = "0.1.0"
@@ -206,7 +206,7 @@ EOF
 }
 
 create_api_files() {
-    cat > "src/$PROJECT_NAME/main.py" << EOF
+    cat > "src/$Agent Reliability Enforcement System/main.py" << EOF
 """FastAPI application entry point."""
 
 from fastapi import FastAPI
@@ -234,7 +234,7 @@ EOF
 }
 
 create_cli_files() {
-    cat > "src/$PROJECT_NAME/cli.py" << EOF
+    cat > "src/$Agent Reliability Enforcement System/cli.py" << EOF
 """Command line interface for $PROJECT_DISPLAY_NAME."""
 
 import click
@@ -254,7 +254,7 @@ EOF
 }
 
 create_general_files() {
-    cat > "src/$PROJECT_NAME/main.py" << EOF
+    cat > "src/$Agent Reliability Enforcement System/main.py" << EOF
 """Main module for $PROJECT_DISPLAY_NAME."""
 
 def main():
@@ -280,7 +280,7 @@ EOF
 """Test main module."""
 
 import pytest
-from src.$PROJECT_NAME.main import main
+from src.$Agent Reliability Enforcement System.main import main
 
 
 def test_main():
@@ -316,14 +316,14 @@ $PROJECT_DESCRIPTION
 
 \`\`\`bash
 # Clone the repository
-git clone https://github.com/$GITHUB_USER/$PROJECT_NAME.git
-cd $PROJECT_NAME
+git clone https://github.com/$GITHUB_USER/$Agent Reliability Enforcement System.git
+cd $Agent Reliability Enforcement System
 
 # Install dependencies
 make install
 
 # Set up Doppler (for secrets management)
-doppler setup --project $PROJECT_NAME --config development
+doppler setup --project $Agent Reliability Enforcement System --config development
 \`\`\`
 
 ## 🛠️ Development
@@ -369,7 +369,7 @@ MIT License - see LICENSE file for details.
 
 **$AUTHOR_NAME** - $AUTHOR_EMAIL
 
-Project Link: [https://github.com/$GITHUB_USER/$PROJECT_NAME](https://github.com/$GITHUB_USER/$PROJECT_NAME)
+Project Link: [https://github.com/$GITHUB_USER/$Agent Reliability Enforcement System](https://github.com/$GITHUB_USER/$Agent Reliability Enforcement System)
 EOF
 
     success "Documentation created"
@@ -406,7 +406,7 @@ final_summary() {
     header "🎉 =================================================="
     echo ""
 
-    success "✅ Project '$PROJECT_NAME' configured and ready"
+    success "✅ Project '$Agent Reliability Enforcement System' configured and ready"
     success "✅ Python $PYTHON_VERSION environment set up"
     success "✅ Dependencies installed"
     success "✅ Pre-commit hooks configured"
@@ -416,7 +416,7 @@ final_summary() {
     header "🚀 NEXT STEPS:"
     echo ""
     echo "1. Set up Doppler for secrets:"
-    echo "   doppler setup --project $PROJECT_NAME --config development"
+    echo "   doppler setup --project $Agent Reliability Enforcement System --config development"
     echo ""
     echo "2. Start developing:"
     echo "   make run          # Start development server"
@@ -424,7 +424,7 @@ final_summary() {
     echo "   make lint         # Check code quality"
     echo ""
     echo "3. Set up GitHub repository:"
-    echo "   git remote add origin https://github.com/$GITHUB_USER/$PROJECT_NAME.git"
+    echo "   git remote add origin https://github.com/$GITHUB_USER/$Agent Reliability Enforcement System.git"
     echo "   git add ."
     echo "   git commit -m \"Initial project setup\""
     echo "   git push -u origin main"

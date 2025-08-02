@@ -1,12 +1,12 @@
-# MkDocs Configuration for project_name
+# MkDocs Configuration for ares
 
-site_name: PROJECT_NAME Documentation
-site_description: Documentation for PROJECT_NAME
-site_author: Your Name
-site_url: https://your-username.github.io/project_name
+site_name: Agent Reliability Enforcement System Documentation
+site_description: Documentation for Agent Reliability Enforcement System
+site_author: ARES Development Team
+site_url: https://ares-team.github.io/ares
 
-repo_name: your-username/project_name
-repo_url: https://github.com/your-username/project_name
+repo_name: ares-team/ares
+repo_url: https://github.com/ares-team/ares
 
 theme:
   name: material
@@ -73,12 +73,12 @@ markdown_extensions:
   - tables
   - footnotes
   - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:pymdownx.emoji.twemoji
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
 
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/your-username
+      link: https://github.com/ares-team
     - icon: fontawesome/brands/python
-      link: https://pypi.org/project/project_name/
+      link: https://pypi.org/project/ares/

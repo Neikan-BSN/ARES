@@ -48,7 +48,7 @@ main() {
     # Initialize Git and add files
     log "Setting up Git repository..."
     git add . || warning "Could not add files to Git"
-    
+
     if ! git diff --cached --quiet; then
         git commit -m "Initial template workspace setup
 
@@ -70,7 +70,7 @@ Ready for project customization and development." || warning "Could not commit i
     echo ""
     header "✅ TEMPLATE WORKSPACE COMPLETE!"
     echo ""
-    
+
     success "📁 Project structure created"
     success "📦 Dependencies configured (minimal set)"
     success "🔧 Development tools set up (ruff, black, mypy, pytest)"
@@ -139,7 +139,7 @@ Ready for project customization and development." || warning "Could not commit i
     header "📁 TEMPLATE STRUCTURE:"
     echo ""
     echo "template_workspace/"
-    echo "├── src/project_name/              # Source code (placeholder)"
+    echo "├── src/ares/              # Source code (placeholder)"
     echo "├── tests/                         # Test suite"
     echo "├── scripts/                       # Setup and utility scripts"
     echo "├── docs/                          # Documentation"
@@ -157,11 +157,11 @@ Ready for project customization and development." || warning "Could not commit i
     header "🔧 CUSTOMIZATION PLACEHOLDERS:"
     echo ""
     echo "The following placeholders will be replaced during setup:"
-    echo "  • project_name → your_project_name"
-    echo "  • PROJECT_NAME → Your Project Display Name"
-    echo "  • Your Name → your actual name"
-    echo "  • your.email@example.com → your email"
-    echo "  • your-username → your GitHub username"
+    echo "  • ares → your_ares"
+    echo "  • Agent Reliability Enforcement System → Your Project Display Name"
+    echo "  • ARES Development Team → your actual name"
+    echo "  • dev@ares.local → your email"
+    echo "  • ares-team → your GitHub username"
     echo ""
 
     echo ""

@@ -1,10 +1,10 @@
-# PROJECT_NAME
+# Agent Reliability Enforcement System
 
-Welcome to the PROJECT_NAME documentation!
+Welcome to the Agent Reliability Enforcement System documentation!
 
 ## Overview
 
-PROJECT_NAME is a modern Python project built with best practices, comprehensive tooling, and automation.
+Agent Reliability Enforcement System is a modern Python project built with best practices, comprehensive tooling, and automation.
 
 ## Features
 
@@ -24,9 +24,9 @@ PROJECT_NAME is a modern Python project built with best practices, comprehensive
 
 ## Getting Help
 
-- Check the [documentation](https://your-username.github.io/project_name)
-- Open an [issue](https://github.com/your-username/project_name/issues)
-- Review the [examples](https://github.com/your-username/project_name/tree/main/examples)
+- Check the [documentation](https://ares-team.github.io/ares)
+- Open an [issue](https://github.com/ares-team/ares/issues)
+- Review the [examples](https://github.com/ares-team/ares/tree/main/examples)
 
 ## License
 

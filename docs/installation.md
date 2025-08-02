@@ -11,14 +11,14 @@
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## Install PROJECT_NAME
+## Install Agent Reliability Enforcement System
 
 ### From Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/project_name.git
-cd project_name
+git clone https://github.com/ares-team/ares.git
+cd ares
 
 # Install dependencies
 make install
@@ -27,7 +27,7 @@ make install
 ### From PyPI (when published)
 
 ```bash
-uv add project_name
+uv add ares
 ```
 
 ## Environment Setup
@@ -40,11 +40,11 @@ curl -Ls https://cli.doppler.com/install.sh | sh
 
 # Login and setup
 doppler login
-doppler setup --project project_name --config development
+doppler setup --project ares --config development
 
 # Set required secrets
-doppler secrets set API_SECRET_KEY="your-secret-key"
-doppler secrets set JWT_SECRET_KEY="your-jwt-secret"
+doppler secrets set API_SECRET_KEY="your-secret-key"  # pragma: allowlist secret
+doppler secrets set JWT_SECRET_KEY="your-jwt-secret"  # pragma: allowlist secret
 ```
 
 ### 2. Local Environment (Development Only)
@@ -52,8 +52,8 @@ doppler secrets set JWT_SECRET_KEY="your-jwt-secret"
 For local development, you can use environment variables:
 
 ```bash
-export API_SECRET_KEY="your-secret-key"
-export JWT_SECRET_KEY="your-jwt-secret"
+export API_SECRET_KEY="your-secret-key"  # pragma: allowlist secret
+export JWT_SECRET_KEY="your-jwt-secret"  # pragma: allowlist secret
 ```
 
 ## Verification
@@ -109,7 +109,7 @@ chmod +x scripts/*.sh
 **Import errors**
 ```bash
 # Ensure you're in the project root and have activated the environment
-uv run python -c "import project_name; print('✅ Import successful')"
+uv run python -c "import ares; print('✅ Import successful')"
 ```
 
 ## Next Steps

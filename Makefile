@@ -1,11 +1,11 @@
-# PROJECT_NAME - Python Project Template
+# Agent Reliability Enforcement System - Python Project Template
 # Makefile for development workflow automation
 
 .PHONY: help install clean lint format test security run dev docs deploy backup
 
 # Default target
 help: ## Show this help message
-	@echo "PROJECT_NAME - Python Project Template"
+	@echo "Agent Reliability Enforcement System - Python Project Template"
 	@echo "======================================"
 	@echo ""
 	@echo "Available targets:"
@@ -68,11 +68,11 @@ secrets-update: ## Update secrets baseline
 # Development server
 run: ## Start the development server
 	@echo "🚀 Starting development server..."
-	uv run python -m src.project_name.main
+	uv run python -m src.ares.main
 
 run-api: ## Start API server
 	@echo "⚡ Starting API server..."
-	uv run uvicorn src.project_name.api.main:app --reload --host 0.0.0.0 --port 8000
+	uv run uvicorn src.ares.api.main:app --reload --host 0.0.0.0 --port 8000
 
 # Clean up
 clean: ## Clean build artifacts and cache
@@ -99,7 +99,7 @@ docs-deploy: ## Deploy documentation
 # Docker
 docker-build: ## Build Docker image
 	@echo "🐳 Building Docker image..."
-	docker build -t project_name:latest .
+	docker build -t ares:latest .
 
 docker-run: ## Run Docker container
 	@echo "🐳 Running Docker container..."
@@ -138,7 +138,7 @@ ci-check: ## Run all CI checks locally
 # Version management
 version: ## Show current version
 	@echo "📦 Current version:"
-	@uv run python -c "from src.project_name import __version__; print(__version__)"
+	@uv run python -c "from src.ares import __version__; print(__version__)"
 
 # Setup and customization
 setup: ## Run interactive project setup

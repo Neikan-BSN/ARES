@@ -1,13 +1,13 @@
 # Quick Start
 
-Get up and running with PROJECT_NAME in minutes!
+Get up and running with Agent Reliability Enforcement System in minutes!
 
 ## 1. Setup
 
 ```bash
 # Clone and enter the project
-git clone https://github.com/your-username/project_name.git
-cd project_name
+git clone https://github.com/ares-team/ares.git
+cd ares
 
 # Run the interactive setup (recommended)
 ./scripts/setup_project.sh
@@ -20,7 +20,7 @@ Or manually:
 make install
 
 # Set up secrets management
-doppler setup --project project_name --config development
+doppler setup --project ares --config development
 ```
 
 ## 2. Basic Usage
@@ -38,7 +38,7 @@ uv run project-cli --verbose
 ### As a Python Module
 
 ```python
-from project_name import main
+from ares import main
 
 # Run the main function
 main()
@@ -104,12 +104,12 @@ uv add --group dev pytest-mock
 
 Set in Doppler:
 ```bash
-doppler secrets set NEW_SECRET="value"
+doppler secrets set NEW_SECRET="value"  # pragma: allowlist secret
 ```
 
 Or locally (development only):
 ```bash
-export NEW_SECRET="value"
+export NEW_SECRET="value"  # pragma: allowlist secret
 ```
 
 ### Running Scripts
@@ -184,7 +184,7 @@ make help
 
 ```python
 # example.py
-from project_name import main
+from ares import main
 
 if __name__ == "__main__":
     main()
