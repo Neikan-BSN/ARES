@@ -295,7 +295,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ares:${{ github.sha }}
+          image-ref: ${{ steps.meta.outputs.tags[0] }}
           format: 'sarif'
           output: 'trivy-results.sarif'
 
