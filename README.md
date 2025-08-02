@@ -140,7 +140,7 @@ uv run ruff format
 uv run ruff check
 
 # Type checking
-uv run mypy src/
+# Type checking: Use Pylance in VS Code for real-time type checking
 ```
 
 ## 📚 Documentation

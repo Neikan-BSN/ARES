@@ -247,7 +247,7 @@ uv run pytest tests/integration/  # Cross-agent integration tests
 # Code quality pipeline
 uv run ruff check src/            # Fast Python linting
 uv run ruff format src/           # Code formatting
-uv run mypy src/                  # Type checking
+# Type checking handled by Pylance in VS Code
 uv run pytest --cov=src          # Test coverage
 ```
 
@@ -314,7 +314,7 @@ uv run pytest --cov=src          # Test coverage
 
 ### **Code Quality Framework**
 
-- **Language Standards**: Python 3.11+ with type hints and SQLAlchemy 2.0
+- **Language Standards**: Python 3.11+ with type hints (enforced by Pylance) and SQLAlchemy 2.0
 - **API Standards**: FastAPI with Pydantic models and dependency injection
 - **Testing**: pytest with >90% coverage for agent reliability components
 - **Documentation**: Comprehensive API documentation with reliability metrics
@@ -445,7 +445,7 @@ uv run pytest -k "test_agent"     # Run specific test patterns
 # Code quality
 uv run ruff check                 # Lint code
 uv run ruff format                # Format code
-uv run mypy src/                  # Type checking
+# Type checking handled by Pylance in VS Code
 uv run bandit -r src/             # Security scan
 ```
 
