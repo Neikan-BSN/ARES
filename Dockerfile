@@ -35,27 +35,34 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /tmp/* \
     && rm -rf /var/tmp/*
 
-# Install UV package manager
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:$PATH"
+# Install UV package manager to a system location
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/uv && \
+    chmod +x /usr/local/bin/uv
+
+# Verify UV installation
+RUN uv --version
 
 # Set working directory
 WORKDIR /app
 
 # Copy UV configuration files first (for better caching)
-COPY pyproject.toml uv.lock* ./
+COPY pyproject.toml uv.lock* README.md ./
 
 # ===== STAGE 2: Dependency Installation =====
 FROM base AS dependencies
 
-# Ensure UV is in PATH and available
-ENV PATH="/root/.cargo/bin:$PATH"
+# Verify UV is available
+RUN uv --version
 
 # Install Python dependencies with UV
 RUN uv sync --frozen --no-dev
 
 # ===== STAGE 3: Development Dependencies =====
 FROM dependencies AS development-deps
+
+# Verify UV is available
+RUN uv --version
 
 # Install development dependencies
 RUN uv sync --frozen --all-extras
@@ -172,6 +179,9 @@ CMD ["uv", "run", "celery", "-A", "src.ares.celery_app", "beat", "--loglevel=INF
 
 # ===== STAGE 9: Testing Image =====
 FROM development-deps AS testing
+
+# Verify UV is available
+RUN uv --version
 
 # Copy all source code and tests
 COPY . .
