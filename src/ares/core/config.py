@@ -11,13 +11,13 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "DEBUG"
 
-    # Database
-    DATABASE_URL: str = "sqlite:///./ares.db"
-    POSTGRES_HOST: str | None = None
+    # Database - PostgreSQL primary, SQLite fallback for development
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:devpass@localhost:5432/ares_dev"
+    POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
-    POSTGRES_DB: str | None = None
-    POSTGRES_USER: str | None = None
-    POSTGRES_PASSWORD: str | None = None
+    POSTGRES_DB: str = "ares_dev"
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "devpass"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -32,8 +32,10 @@ class Settings(BaseSettings):
     ARES_AGENT_MONITORING_INTERVAL: int = 30
     ARES_ENFORCEMENT_ENABLED: bool = True
     ARES_MCP_DISCOVERY_ENABLED: bool = True
+    EVIDENCE_STORAGE_PATH: str | None = None
 
     # Security
+    SECRET_KEY: str = "dev-secret-key-change-in-production"
     ANTHROPIC_API_KEY: str | None = None
     OPENAI_API_KEY: str | None = None
 
@@ -41,12 +43,11 @@ class Settings(BaseSettings):
     RELOAD: bool = True
     WORKERS: int = 1
 
-    class Config:
-        """Pydantic configuration."""
-
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": True,
+    }
 
 
 settings = Settings()

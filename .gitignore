@@ -171,3 +171,4 @@ dev_*.py
 test_*.py
 scratch_*.py
 *.tmp
+.env.DOPPLER_REQUIRED

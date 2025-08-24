@@ -1,0 +1,24 @@
+{
+  "project_name": "ARES",
+  "project_path": "/home/user01/projects/active-projects/ARES",
+  "architecture_type": "agent_framework",
+  "documentation_targets": [
+    "ARCHITECTURE.md",
+    "TECHNICAL_SPECIFICATIONS.md"
+  ],
+  "change_detection_patterns": [
+    "*.py",
+    "*.yaml",
+    "*.json"
+  ],
+  "regeneration_triggers": [
+    "ares/",
+    "tests/",
+    "src/"
+  ],
+  "performance_targets": {
+    "files_per_minute": 53.0,
+    "accuracy": 96.5
+  },
+  "monitoring_enabled": true
+}

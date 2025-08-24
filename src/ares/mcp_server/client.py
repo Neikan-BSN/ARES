@@ -77,7 +77,7 @@ class ARESMCPClient:
                     session = await self._create_mcp_session(server_name, config)
                     self._connection_pools[server_name].append(session)
                     self.logger.debug(
-                        f"Created MCP connection {i+1}/{self.max_connections} for {server_name}"
+                        f"Created MCP connection {i + 1}/{self.max_connections} for {server_name}"
                     )
                 except Exception as e:
                     self.logger.error(

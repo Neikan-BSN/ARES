@@ -7,9 +7,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .core.config import settings
+from .services import DocumentationService
 
 try:
-    from .api.routes import agents, enforcement, health
+    from .api.routes.agents import router as agents
+    from .api.routes.enforcement import router as enforcement
+    from .api.routes.health import router as health
+    from .api.routes.project_analytics import router as project_analytics
+    from .api.routes.project_bulk_operations import router as project_bulk_operations
+    from .api.routes.project_tracking import router as project_tracking
+    from .dashboard.router import router as dashboard_router
 except ImportError:
     # Create basic placeholder routers for development
     from fastapi import APIRouter
@@ -18,6 +25,10 @@ except ImportError:
     health = APIRouter()  # type: ignore[assignment]
     agents = APIRouter()  # type: ignore[assignment]
     enforcement = APIRouter()  # type: ignore[assignment]
+    project_tracking = APIRouter()  # type: ignore[assignment]
+    project_analytics = APIRouter()  # type: ignore[assignment]
+    project_bulk_operations = APIRouter()  # type: ignore[assignment]
+    dashboard_router = APIRouter()  # type: ignore[assignment]
 
     @health.get("/")  # type: ignore[attr-defined]
     async def health_check():
@@ -59,6 +70,47 @@ except ImportError:
             }
         )
 
+    @project_tracking.get("/overview")  # type: ignore[attr-defined]
+    async def project_overview():
+        return JSONResponse(
+            {
+                "message": "Project tracking endpoints - Implementation in progress",
+                "endpoints": [
+                    "milestones",
+                    "workflows",
+                    "technical-debt",
+                    "integration-checkpoints",
+                ],
+            }
+        )
+
+    @dashboard_router.get("/")  # type: ignore[attr-defined]
+    async def dashboard_home():
+        return JSONResponse(
+            {
+                "message": "ARES Dashboard - Implementation in progress",
+                "features": [
+                    "real-time monitoring",
+                    "agent coordination",
+                    "project tracking",
+                ],
+            }
+        )
+
+    @project_analytics.get("/overview")  # type: ignore[attr-defined]
+    async def analytics_overview():
+        return JSONResponse(
+            {
+                "message": "Project analytics endpoints - Implementation in progress",
+                "endpoints": [
+                    "overview",
+                    "agent-performance",
+                    "completion-trend",
+                    "debt-analysis",
+                ],
+            }
+        )
+
 
 # Create FastAPI application
 app = FastAPI(
@@ -80,17 +132,29 @@ if settings.DEBUG:
     )
 
 # Include routers
-app.include_router(health.router, prefix="/health", tags=["health"])
-app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
-app.include_router(
-    enforcement.router, prefix="/api/v1/enforcement", tags=["enforcement"]
-)
+app.include_router(health, prefix="/health", tags=["health"])
+app.include_router(agents, prefix="/api/v1/agents", tags=["agents"])
+app.include_router(enforcement, prefix="/api/v1/enforcement", tags=["enforcement"])
+app.include_router(project_tracking, tags=["project-tracking"])
+app.include_router(project_analytics, tags=["project-analytics"])
+app.include_router(project_bulk_operations, tags=["project-bulk-operations"])
+app.include_router(dashboard_router, prefix="/dashboard", tags=["dashboard"])
+
+# Initialize documentation service
+documentation_service = DocumentationService()
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup."""
     print("🚀 ARES - Agent Reliability Enforcement System starting up...")
+
+    # Update documentation on startup
+    try:
+        await documentation_service.update_master_documentation()
+        print("📚 Documentation updated successfully")
+    except Exception as e:
+        print(f"⚠️ Failed to update documentation: {e}")
 
 
 @app.on_event("shutdown")

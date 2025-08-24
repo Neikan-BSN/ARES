@@ -4,6 +4,7 @@ import asyncio
 import json
 from datetime import datetime
 
+import aiofiles
 import click
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -87,8 +88,9 @@ def verify_task(
     async def _verify_task():
         try:
             # Load evidence from file
-            with open(evidence_file) as f:
-                evidence_data = json.load(f)
+            async with aiofiles.open(evidence_file) as f:
+                content = await f.read()
+                evidence_data = json.loads(content)
 
             # Create completion request
             completion_request = TaskCompletionRequest(
@@ -316,8 +318,9 @@ def collect_proof(
     async def _collect_proof():
         try:
             # Load evidence from file
-            with open(evidence_file) as f:
-                evidence_data = json.load(f)
+            async with aiofiles.open(evidence_file) as f:
+                content = await f.read()
+                evidence_data = json.loads(content)
 
             # Create proof request
             proof_request = ProofOfWorkRequest(

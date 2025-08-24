@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "git": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-server-git", "--repository", "/home/user01/projects/ARES"]
+    },
+    "ares-sqlite": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@jparkerweb/mcp-sqlite", "/home/user01/projects/ARES/ares.db"]
+    },
+    "ares-dev-sqlite": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@jparkerweb/mcp-sqlite", "/home/user01/projects/ARES/ares_dev.db"]
+    },
+    "ares-postgres": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/ares_dev"]
+    }
+  },
+  "env": {
+    "REDIS_URL": "redis://localhost:6379/0",
+    "DATABASE_URL": "sqlite:///./ares.db"
+  }
+}

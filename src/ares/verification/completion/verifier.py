@@ -71,12 +71,12 @@ class CompletionVerifier:
             validation_result = await self._validate_completion_request(
                 completion_request
             )
-            if not validation_result.is_valid:
+            if not validation_result["is_valid"]:
                 return TaskCompletionResult(
                     task_id=task_id,
                     agent_id=agent_id,
                     status=CompletionStatus.INVALID,
-                    message=validation_result.error_message,
+                    message=validation_result["error_message"],
                     quality_metrics=QualityMetrics(),
                     evidence=[],
                     verification_timestamp=datetime.now(UTC),
@@ -443,8 +443,13 @@ class CompletionVerifier:
             )
 
             if tool_evidence:
-                tool_calls = tool_evidence.data
-                if self._has_unauthorized_tool_usage(tool_calls):
+                tool_calls_data = tool_evidence.data
+                tool_calls = (
+                    tool_calls_data.get("tool_calls", [])
+                    if isinstance(tool_calls_data, dict)
+                    else []
+                )
+                if tool_calls and self._has_unauthorized_tool_usage(tool_calls):
                     security_score -= 0.3
                     security_issues.append("Unauthorized tool usage detected")
 

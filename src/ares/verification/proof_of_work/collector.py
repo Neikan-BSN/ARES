@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import aiofiles
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.config import settings
@@ -246,14 +247,14 @@ class ProofOfWorkCollector:
 
             # Collect file system changes evidence
             if "file_changes" in request.evidence_sources:
-                file_evidence = await self._collect_file_changes_evidence(
+                file_evidence = await self._collect_code_evidence(
                     request.evidence_sources["file_changes"]
                 )
                 evidence_list.extend(file_evidence)
 
             # Collect test results evidence
             if "test_results" in request.evidence_sources:
-                test_evidence = await self._collect_test_results_evidence(
+                test_evidence = await self._collect_performance_evidence(
                     request.evidence_sources["test_results"]
                 )
                 evidence_list.extend(test_evidence)
@@ -781,10 +782,10 @@ class ProofOfWorkCollector:
                 "collection_timestamp": datetime.now(UTC).isoformat(),
             }
 
-            with open(summary_file, "w") as f:
+            async with aiofiles.open(summary_file, "w") as f:
                 import json
 
-                json.dump(summary_data, f, indent=2)
+                await f.write(json.dumps(summary_data, indent=2))
 
             artifacts["evidence_summary"] = str(summary_file)
 

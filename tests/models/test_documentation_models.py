@@ -4,9 +4,9 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.ares.models.agent import Agent
-from src.ares.models.base import Base
-from src.ares.models.documentation import (
+from ares.models.agent import Agent
+from ares.models.base import Base
+from ares.models.documentation import (
     DocumentationArtifact,
     DocumentationFormat,
     DocumentationTask,
@@ -16,7 +16,7 @@ from src.ares.models.documentation import (
     QualityAssessment,
     QualityScore,
 )
-from src.ares.models.task import Task, TaskStatus
+from ares.models.task import Task, TaskStatus
 
 
 @pytest.fixture

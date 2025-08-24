@@ -1,0 +1,42 @@
+# MCP Server Management for ARES
+# Include this in your main Makefile or run directly with make -f Makefile.mcp
+
+.PHONY: install-mcp list-mcp clean-mcp
+
+# Install all MCP servers for ARES
+install-mcp:
+	@echo "🚀 Installing MCP servers for ARES..."
+	@echo "Removing existing servers first..."
+	@claude mcp remove context7 sqlite git github fetch filesystem sequentialthinking docker memory code-checker ripgrep-search eslint-quality playwright-enhanced 2>/dev/null || true
+	@echo "Installing core MCP servers..."
+	@claude mcp add context7 -s project -- npx -y @context7/mcp-server || echo "⚠️ context7 failed"
+	@claude mcp add sqlite -s project -- npx -y @modelcontextprotocol/server-sqlite $(PWD)/data || echo "⚠️ sqlite failed"
+	@claude mcp add git -s project -- npx -y @cyanheads/git-mcp-server || echo "⚠️ git failed"
+	@claude mcp add github -s project -- npx -y @modelcontextprotocol/server-github || echo "⚠️ github failed"
+	@claude mcp add fetch -s project -- npx -y @tokenizin/mcp-npx-fetch || echo "⚠️ fetch failed"
+	@claude mcp add filesystem -s project -- npx -y @modelcontextprotocol/server-filesystem $(PWD) || echo "⚠️ filesystem failed"
+	@claude mcp add sequentialthinking -s project -- npx -y @modelcontextprotocol/server-sequential-thinking || echo "⚠️ sequentialthinking failed"
+	@claude mcp add docker -s project -- npx -y @modelcontextprotocol/server-docker || echo "⚠️ docker failed"
+	@claude mcp add memory -s project -- npx -y @modelcontextprotocol/server-memory || echo "⚠️ memory failed"
+	@echo "Installing additional MCP servers..."
+	@if [ -d "/home/user01/projects/mcp-code-checker" ]; then \
+		claude mcp add code-checker -s project -- uv run python -m mcp_code_checker --project-dir $(PWD) || echo "⚠️ code-checker failed"; \
+	else \
+		echo "⚠️ mcp-code-checker directory not found, skipping"; \
+	fi
+	@claude mcp add ripgrep-search -s project -- npx -y mcp-ripgrep@latest || echo "⚠️ ripgrep-search failed"
+	@claude mcp add eslint-quality -s project -- npx -y @eslint/mcp@latest || echo "⚠️ eslint-quality failed"
+	@claude mcp add playwright-enhanced -s project -- npx -y @executeautomation/playwright-mcp-server || echo "⚠️ playwright-enhanced failed"
+	@echo "✅ MCP server installation completed for ARES"
+	@echo "📝 Next: Restart Claude Code and approve .mcp.json when prompted"
+
+# List current MCP servers
+list-mcp:
+	@echo "📋 MCP servers configured for ARES:"
+	@claude mcp list || echo "No MCP servers configured"
+
+# Clean all MCP servers
+clean-mcp:
+	@echo "🧹 Removing all MCP servers from ARES..."
+	@claude mcp remove context7 sqlite git github fetch filesystem sequentialthinking docker memory code-checker ripgrep-search eslint-quality playwright-enhanced 2>/dev/null || true
+	@echo "✅ All MCP servers removed"

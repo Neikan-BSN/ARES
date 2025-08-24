@@ -1,0 +1,71 @@
+# Docker Compose override for BuildKit optimization
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.buildkit.yml up --build
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        PYTHON_VERSION: "3.12"
+        UV_VERSION: "0.8.3"
+        PROJECT_NAME: "ares"
+        BUILDKIT_INLINE_CACHE: 1
+        BUILD_DATE: ${BUILD_DATE:-}
+        VCS_REF: ${VCS_REF:-}
+        VERSION: ${VERSION:-0.1.0}
+      cache_from:
+        - type=local,src=/tmp/.buildx-cache-development
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-development,mode=max
+    environment:
+      # Add BuildKit optimizations
+      - DOCKER_BUILDKIT=1
+      - BUILDKIT_PROGRESS=plain
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: celery-worker
+      args:
+        PYTHON_VERSION: "3.12"
+        UV_VERSION: "0.8.3"
+        PROJECT_NAME: "ares"
+        BUILDKIT_INLINE_CACHE: 1
+      cache_from:
+        - type=local,src=/tmp/.buildx-cache-celery-worker
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-celery-worker,mode=max
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: celery-beat
+      args:
+        PYTHON_VERSION: "3.12"
+        UV_VERSION: "0.8.3"
+        PROJECT_NAME: "ares"
+        BUILDKIT_INLINE_CACHE: 1
+      cache_from:
+        - type=local,src=/tmp/.buildx-cache-celery-beat
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-celery-beat,mode=max
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: testing
+      args:
+        PYTHON_VERSION: "3.12"
+        UV_VERSION: "0.8.3"
+        BUILDKIT_INLINE_CACHE: 1
+      cache_from:
+        - type=local,src=/tmp/.buildx-cache-testing
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-testing,mode=max

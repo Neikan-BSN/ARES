@@ -1,0 +1,401 @@
+{
+  "documentation_system": {
+    "version": "1.0.0",
+    "name": "ARES Documentation Agent System",
+    "description": "Comprehensive project documentation and tracking system",
+    "last_updated": "2025-08-02T05:30:00Z"
+  },
+
+  "auto_update_service": {
+    "enabled": true,
+    "update_interval_minutes": 15,
+    "background_service": true,
+    "error_retry_attempts": 3,
+    "error_retry_delay_seconds": 60,
+    "health_check_interval_minutes": 5
+  },
+
+  "master_documents": {
+    "PROJECT_ROADMAP.md": {
+      "update_frequency": "weekly",
+      "data_sources": [
+        "project_milestones",
+        "git_statistics",
+        "code_metrics",
+        "phase_completion"
+      ],
+      "template_variables": [
+        "overall_completion",
+        "phase_completions",
+        "component_status",
+        "technical_debt_summary"
+      ],
+      "priority": "high"
+    },
+
+    "DEVELOPMENT_STATUS.md": {
+      "update_frequency": "daily",
+      "data_sources": [
+        "git_statistics",
+        "code_metrics",
+        "agent_activities",
+        "recent_milestones"
+      ],
+      "template_variables": [
+        "build_status",
+        "security_status",
+        "code_metrics",
+        "active_development"
+      ],
+      "priority": "high"
+    },
+
+    "AGENT_COORDINATION_LOG.md": {
+      "update_frequency": "15_minutes",
+      "data_sources": [
+        "agent_activities",
+        "agent_workflows",
+        "task_handoffs",
+        "performance_metrics"
+      ],
+      "template_variables": [
+        "active_agents",
+        "coordination_tasks",
+        "performance_summary",
+        "communication_log"
+      ],
+      "priority": "medium"
+    },
+
+    "TECHNICAL_DEBT_REGISTRY.md": {
+      "update_frequency": "daily",
+      "data_sources": [
+        "technical_debt_items",
+        "resolution_timeline",
+        "priority_distribution",
+        "agent_assignments"
+      ],
+      "template_variables": [
+        "debt_by_priority",
+        "resolution_timeline",
+        "agent_workload",
+        "risk_assessment"
+      ],
+      "priority": "medium"
+    },
+
+    "INTEGRATION_CHECKPOINTS.md": {
+      "update_frequency": "hourly",
+      "data_sources": [
+        "integration_checkpoints",
+        "system_health_metrics",
+        "dependency_verification",
+        "mcp_server_status"
+      ],
+      "template_variables": [
+        "checkpoint_status",
+        "integration_health",
+        "dependency_matrix",
+        "risk_indicators"
+      ],
+      "priority": "high"
+    }
+  },
+
+  "tracking_documents": {
+    "tracker/MILESTONE_TRACKER.md": {
+      "update_frequency": "15_minutes",
+      "data_sources": [
+        "project_milestones",
+        "milestone_dependencies",
+        "agent_assignments",
+        "progress_metrics"
+      ],
+      "features": [
+        "real_time_progress",
+        "dependency_tracking",
+        "risk_assessment",
+        "performance_analytics"
+      ]
+    },
+
+    "tracker/AGENT_PERFORMANCE_TRACKER.md": {
+      "update_frequency": "15_minutes",
+      "data_sources": [
+        "agent_activities",
+        "task_completion_rates",
+        "reliability_scores",
+        "workload_distribution"
+      ],
+      "features": [
+        "performance_scoring",
+        "activity_tracking",
+        "collaboration_analysis",
+        "improvement_recommendations"
+      ]
+    },
+
+    "reports/DAILY_STATUS_REPORT.md": {
+      "update_frequency": "daily",
+      "generation_time": "18:00",
+      "data_sources": [
+        "daily_activities",
+        "milestone_progress",
+        "critical_issues",
+        "system_health"
+      ],
+      "features": [
+        "executive_summary",
+        "accomplishments",
+        "risk_assessment",
+        "next_day_priorities"
+      ]
+    }
+  },
+
+  "data_sources": {
+    "database": {
+      "connection_string": "sqlite:///./ares_dev.db",
+      "models": [
+        "ProjectMilestone",
+        "AgentWorkflow",
+        "TechnicalDebtItem",
+        "IntegrationCheckpoint",
+        "AgentActivity"
+      ],
+      "query_timeout_seconds": 30
+    },
+
+    "git_repository": {
+      "enabled": true,
+      "metrics": [
+        "commit_count",
+        "recent_commits",
+        "modified_files",
+        "current_branch",
+        "contributors"
+      ],
+      "analysis_period_days": 7
+    },
+
+    "code_quality_tools": {
+      "bandit_security_scan": {
+        "enabled": true,
+        "report_file": "bandit-report.json",
+        "metrics": ["total_loc", "security_issues", "files_scanned"]
+      },
+
+      "line_count_analysis": {
+        "enabled": true,
+        "file_patterns": ["*.py", "*.js", "*.ts", "*.vue", "*.md"],
+        "exclude_patterns": ["node_modules", "__pycache__", ".git"]
+      }
+    },
+
+    "system_monitoring": {
+      "api_health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "websocket_status": "/api/project/documentation/status"
+    }
+  },
+
+  "template_engine": {
+    "type": "jinja2",
+    "template_directory": "project_plan/templates/",
+    "cache_templates": true,
+    "auto_reload": true,
+    "custom_filters": [
+      "format_datetime",
+      "percentage_format",
+      "status_icon",
+      "priority_color"
+    ]
+  },
+
+  "output_configuration": {
+    "base_directory": "project_plan/",
+    "file_permissions": "644",
+    "backup_before_update": true,
+    "backup_retention_days": 7,
+    "atomic_writes": true
+  },
+
+  "agent_coordination": {
+    "primary_documentation_agent": "@project-documentation-agent",
+    "coordination_agents": [
+      "@tech-lead-orchestrator",
+      "@documentation-specialist",
+      "@backend-developer"
+    ],
+    "notification_channels": [
+      "websocket_broadcast",
+      "agent_activity_log"
+    ]
+  },
+
+  "quality_standards": {
+    "documentation_completeness": {
+      "minimum_percentage": 95,
+      "required_sections": [
+        "overview",
+        "status",
+        "metrics",
+        "action_items"
+      ]
+    },
+
+    "data_freshness": {
+      "maximum_age_minutes": 30,
+      "staleness_warning_minutes": 60,
+      "critical_staleness_minutes": 120
+    },
+
+    "content_accuracy": {
+      "data_validation": true,
+      "cross_reference_checking": true,
+      "metric_consistency_validation": true
+    }
+  },
+
+  "error_handling": {
+    "database_connection_errors": {
+      "retry_attempts": 3,
+      "retry_delay_seconds": 10,
+      "fallback_to_cached_data": true
+    },
+
+    "git_operation_errors": {
+      "skip_on_failure": true,
+      "log_errors": true,
+      "use_placeholder_data": true
+    },
+
+    "template_generation_errors": {
+      "use_backup_template": true,
+      "notify_administrators": true,
+      "continue_with_other_documents": true
+    }
+  },
+
+  "performance_optimization": {
+    "database_query_optimization": {
+      "use_connection_pooling": true,
+      "cache_frequent_queries": true,
+      "query_timeout_seconds": 30
+    },
+
+    "template_rendering": {
+      "cache_compiled_templates": true,
+      "async_rendering": true,
+      "batch_updates": true
+    },
+
+    "file_operations": {
+      "use_atomic_writes": true,
+      "compress_backups": true,
+      "parallel_file_updates": false
+    }
+  },
+
+  "monitoring_and_alerts": {
+    "health_monitoring": {
+      "check_interval_minutes": 5,
+      "metrics": [
+        "update_success_rate",
+        "average_update_time",
+        "error_count",
+        "data_staleness"
+      ]
+    },
+
+    "alerting": {
+      "channels": ["websocket", "log"],
+      "alert_conditions": [
+        {
+          "name": "update_failure",
+          "condition": "update_success_rate < 90%",
+          "severity": "high"
+        },
+        {
+          "name": "data_staleness",
+          "condition": "data_age > 60 minutes",
+          "severity": "medium"
+        },
+        {
+          "name": "service_health",
+          "condition": "service_unavailable",
+          "severity": "critical"
+        }
+      ]
+    }
+  },
+
+  "integration_settings": {
+    "fastapi_integration": {
+      "enabled": true,
+      "endpoints": [
+        "/api/project/documentation/update",
+        "/api/project/documentation/status"
+      ],
+      "websocket_path": "/api/project/ws"
+    },
+
+    "mcp_server_integration": {
+      "enabled": true,
+      "required_servers": [
+        "sqlite",
+        "git",
+        "filesystem"
+      ],
+      "optional_servers": [
+        "postgresql",
+        "eslint-quality",
+        "code_checker"
+      ]
+    },
+
+    "external_tool_integration": {
+      "git_hooks": {
+        "enabled": false,
+        "planned": true,
+        "hooks": ["pre-commit", "post-commit"]
+      },
+
+      "ci_cd_integration": {
+        "enabled": false,
+        "planned": true,
+        "platforms": ["github_actions"]
+      }
+    }
+  },
+
+  "security_configuration": {
+    "file_access": {
+      "restrict_to_project_directory": true,
+      "validate_file_paths": true,
+      "prevent_path_traversal": true
+    },
+
+    "data_sanitization": {
+      "sanitize_user_input": true,
+      "escape_html_content": true,
+      "validate_data_types": true
+    },
+
+    "access_control": {
+      "require_authentication": false,
+      "log_all_operations": true,
+      "audit_trail": true
+    }
+  },
+
+  "development_configuration": {
+    "debug_mode": true,
+    "verbose_logging": true,
+    "development_features": {
+      "hot_reload": true,
+      "detailed_error_messages": true,
+      "performance_profiling": false
+    }
+  }
+}

@@ -164,7 +164,7 @@ async def get_agent_statuses():
             name=f"Agent {i}",
             status="active" if i <= 12 else "inactive",
             last_seen=datetime.utcnow() - timedelta(minutes=i * 2),
-            current_task=f"task_{i+100}" if i <= 8 else None,
+            current_task=f"task_{i + 100}" if i <= 8 else None,
             reliability_score=0.75 + (i % 5) * 0.05,
             total_tasks_completed=50 + i * 10,
             success_rate=0.80 + (i % 10) * 0.02,
@@ -208,7 +208,9 @@ async def get_verification_activity(limit: int = 50):
             type=(
                 "task_completion"
                 if i % 3 == 0
-                else "tool_validation" if i % 3 == 1 else "proof_of_work"
+                else "tool_validation"
+                if i % 3 == 1
+                else "proof_of_work"
             ),
             agent_id=f"agent_{(i % 10) + 1:03d}",
             task_id=f"task_{i + 200}",

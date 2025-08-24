@@ -1,65 +1,69 @@
-# ARES - Agent Reliability Enforcement System
+# ARES - Agent Reliability Enforcement System - Production-ready multi-agent coordination
 # Standardized UV Workspace pyproject.toml Template v2.0
-# Python >=3.11,<3.14 with Hatchling build system
+# Python >=3.12,<3.14 with Hatchling build system - Phase 2 Day 2 Standard
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ares"]
+packages = ["src"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [project]
-name = "ares"
+name = "ARES"
 version = "0.1.0"
-description = "Agent Reliability Enforcement System - Production-ready multi-agent coordination with MCP integration"
+description = "Agent Reliability Enforcement System - Production-ready multi-agent coordination"
 authors = [
-    {name = "ARES Development Team", email = "dev@example.com"}
+    {name = "ARES Development Team", email = "dev@ares-system.ai"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.11,<3.14"
-keywords = ["agents", "mcp", "reliability", "enforcement", "ai", "coordination"]
+requires-python = ">=3.12,<3.13"
+keywords = ["ARES", "python", "ai", "automation"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
-    # Core framework
+    # Core framework (standardized across workspace)
     "fastapi>=0.110.0",
     "uvicorn[standard]>=0.29.0",
     "pydantic>=2.7.0",
     "pydantic-settings>=2.2.0",
-
     # Database & Storage
     "sqlalchemy>=2.0.0",
     "alembic>=1.13.0",
     "asyncpg>=0.29.0",
     "redis>=5.0.0",
-
     # Utilities
     "click>=8.1.7",
     "rich>=13.7.1",
     "pyyaml>=6.0.1",
     "python-dotenv>=1.0.1",
     "structlog>=24.1.0",
-
     # HTTP clients
     "httpx>=0.27.0",
     "websockets>=12.0",
-
     # Agent Framework
     "celery[redis]>=5.3.0",
     "kombu>=5.3.0",
+    # AI/ML capabilities
+    "openai>=1.30.0",
+    "anthropic>=0.25.0",
+    # Graph databases (for agent coordination)
+    "neo4j>=5.0.0",
+    # Monitoring and reliability
+    "prometheus-client>=0.20.0",
+    "psutil>=5.9.0",
+    "aiofiles>=24.1.0",
 ]
 
 [project.optional-dependencies]
@@ -72,11 +76,11 @@ test = [
     "pytest-benchmark>=4.0.0",
     "coverage[toml]>=7.4.0",
     "hypothesis>=6.100.0",
+    "httpx>=0.27.0",
 ]
 
 format = [
-    "black>=24.4.0",
-    "isort>=5.13.2",
+    "ruff>=0.4.0",
 ]
 
 lint = [
@@ -103,16 +107,22 @@ dev = [
     "pre-commit>=3.7.0",
 ]
 
-# ARES-specific dependency groups
+# Agent-specific groups
+agents = [
+    "openai>=1.30.0",
+    "anthropic>=0.25.0",
+]
+
 reliability = [
     "prometheus-client>=0.20.0",
     "psutil>=5.9.0",
 ]
 
-agents = [
-    "openai>=1.30.0",
-    "anthropic>=0.25.0",
+graph = [
+    "neo4j>=5.0.0",
+    "networkx>=3.0.0",
 ]
+
 
 # Convenience group that includes everything for development
 all = [
@@ -123,8 +133,6 @@ all = [
     "pytest-benchmark>=4.0.0",
     "coverage[toml]>=7.4.0",
     "hypothesis>=6.100.0",
-    "black>=24.4.0",
-    "isort>=5.13.2",
     "ruff>=0.4.0",
     "mypy>=1.10.0",
     "types-requests>=2.31.0",
@@ -137,20 +145,27 @@ all = [
     "mkdocs-material>=9.5.0",
     "mkdocstrings[python]>=0.25.0",
     "pre-commit>=3.7.0",
-    "prometheus-client>=0.20.0",
-    "psutil>=5.9.0",
     "openai>=1.30.0",
-    "anthropic>=0.25.0",
+"anthropic>=0.25.0",
+"prometheus-client>=0.20.0",
+"psutil>=5.9.0",
+"neo4j>=5.0.0",
+
 ]
 
 [project.urls]
-Homepage = "https://github.com/user/ares"
-Repository = "https://github.com/user/ares"
-Issues = "https://github.com/user/ares/issues"
-Documentation = "https://user.github.io/ares"
+Homepage = "https://github.com/user/ARES"
+Repository = "https://github.com/user/ARES"
+Issues = "https://github.com/user/ARES/issues"
+Documentation = "https://user.github.io/ARES"
 
 [project.scripts]
-ares = "ares.cli:main"
+ARES = "src.ARES.cli:main"
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+]
 
 # ================================================================================
 # UV CONFIGURATION - CANONICAL VIRTUAL ENVIRONMENT
@@ -162,7 +177,6 @@ package = true
 dev-dependencies = [
     # Development tools
     "ruff>=0.4.0",
-    "black>=24.4.0",
     "mypy>=1.10.0",
     "pre-commit>=3.7.0",
 
@@ -188,7 +202,7 @@ dev-dependencies = [
 # COVERAGE CONFIGURATION
 # ================================================================================
 [tool.coverage.run]
-source = ["src/ares"]
+source = ["src"]
 omit = [
     "*/tests/*",
     "*/test_*",
@@ -212,7 +226,7 @@ exclude_lines = [
 # MYPY CONFIGURATION - PRAGMATIC SETTINGS
 # ================================================================================
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 
 # Explicit package base to fix module path issues
 explicit_package_bases = true
@@ -246,50 +260,18 @@ disallow_untyped_defs = false
 warn_return_any = false
 
 # ================================================================================
-# BLACK CONFIGURATION
-# ================================================================================
-[tool.black]
-line-length = 88
-target-version = ["py311"]
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | docs
-)/
-'''
-
-# ================================================================================
-# ISORT CONFIGURATION
-# ================================================================================
-[tool.isort]
-profile = "black"
-line_length = 88
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-skip_gitignore = true
-skip = ["venv", ".venv", "docs"]
-
-# ================================================================================
 # RUFF CONFIGURATION - PRAGMATIC LINTING
 # ================================================================================
 [tool.ruff]
-target-version = "py311"
+target-version = "py312"
 line-length = 88
+
+[tool.ruff.format]
+# Ruff formatting (replaces Black)
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.ruff.lint]
 select = [
@@ -334,12 +316,88 @@ exclude = [
 # BANDIT SECURITY CONFIGURATION
 # ================================================================================
 [tool.bandit]
-exclude_dirs = ["tests", "docs", "venv", ".venv"]
+exclude_dirs = ["tests", "docs", "venv", ".venv", "migrations"]
+# Strict security configuration - only skip development-related issues
 skips = [
-    "B101",  # assert_used (fine in development)
-    "B601",  # paramiko_calls (sometimes needed)
-    "B602",  # subprocess with shell (sometimes needed)
+    "B101",  # assert_used (fine in development/testing)
+    "B110",  # try_except_pass (acceptable for error handling)
 ]
+# Enable all security tests including high severity ones
+severity = "high"
+confidence = "high"
+# Additional security checks
+tests = [
+    "B102",  # exec_used
+    "B103",  # set_bad_file_permissions
+    "B104",  # hardcoded_bind_all_interfaces
+    "B105",  # hardcoded_password_string
+    "B106",  # hardcoded_password_funcarg
+    "B107",  # hardcoded_password_default
+    "B301",  # pickle
+    "B302",  # marshal
+    "B303",  # md5
+    "B304",  # des
+    "B305",  # cipher
+    "B306",  # mktemp_q
+    "B307",  # eval
+    "B308",  # mark_safe
+    "B309",  # httpsconnection
+    "B310",  # urllib_urlopen
+    "B311",  # random
+    "B312",  # telnetlib
+    "B313",  # xml_bad_cElementTree
+    "B314",  # xml_bad_ElementTree
+    "B315",  # xml_bad_expatreader
+    "B316",  # xml_bad_expatbuilder
+    "B317",  # xml_bad_sax
+    "B318",  # xml_bad_minidom
+    "B319",  # xml_bad_pulldom
+    "B320",  # xml_bad_etree
+    "B321",  # ftplib
+    "B322",  # input
+    "B323",  # unverified_context
+    "B324",  # hashlib_new_insecure_functions
+    "B325",  # tempnam
+    "B401",  # import_telnetlib
+    "B402",  # import_ftplib
+    "B403",  # import_pickle
+    "B404",  # import_subprocess
+    "B405",  # import_xml_etree
+    "B406",  # import_xml_sax
+    "B407",  # import_xml_expat
+    "B408",  # import_xml_minidom
+    "B409",  # import_xml_pulldom
+    "B410",  # import_lxml
+    "B411",  # import_xmlrpclib
+    "B412",  # import_httpoxy
+    "B501",  # request_with_no_cert_validation
+    "B502",  # ssl_with_bad_version
+    "B503",  # ssl_with_bad_defaults
+    "B504",  # ssl_with_no_version
+    "B505",  # weak_cryptographic_key
+    "B506",  # yaml_load
+    "B507",  # ssh_no_host_key_verification
+    "B601",  # paramiko_calls
+    "B602",  # subprocess_popen_with_shell_equals_true
+    "B603",  # subprocess_without_shell_equals_true
+    "B604",  # any_other_function_with_shell_equals_true
+    "B605",  # start_process_with_a_shell
+    "B606",  # start_process_with_no_shell
+    "B607",  # start_process_with_partial_path
+    "B608",  # hardcoded_sql_expressions
+    "B609",  # linux_commands_wildcard_injection
+    "B610",  # django_extra_used
+    "B611",  # django_rawsql_used
+    "B701",  # jinja2_autoescape_false
+    "B702",  # use_of_mako_templates
+    "B703",  # django_mark_safe
+]
+
+
+# Enhanced security reporting
+[tool.bandit.reports]
+format = "json"
+output = "bandit-security-report.json"
 
 # ================================================================================
 # PYTEST CONFIGURATION
@@ -349,5 +407,5 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short --cov=src/ares --cov-report=html --cov-report=term-missing"
+addopts = "-v --tb=short --cov=src --cov-report=html --cov-report=term-missing"
 asyncio_mode = "auto"

@@ -1,0 +1,25 @@
+# Docker BuildKit Configuration for ARES
+# Optimizes build performance with advanced caching
+
+# Enable BuildKit features
+DOCKER_BUILDKIT=1
+BUILDKIT_PROGRESS=plain
+
+# Cache optimization settings
+BUILDKIT_INLINE_CACHE=1
+
+# Multi-platform build support
+DOCKER_CLI_EXPERIMENTAL=enabled
+
+# Performance tuning
+BUILDKIT_STEP_LOG_MAX_SIZE=50000000
+BUILDKIT_STEP_LOG_MAX_SPEED=100000000
+
+# Cache backends
+BUILDKIT_REGISTRY_MIRROR_INSECURE=true
+
+# Garbage collection settings for cache management
+BUILDKIT_GC_POLICY=keepDuration=168h,keepStorage=10GB
+
+# Enable experimental features for better caching
+BUILDX_EXPERIMENTAL=1

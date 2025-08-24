@@ -3,7 +3,19 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
+from ...coordination import agent_registry, get_task_coordinator
+
 router = APIRouter()
+
+
+def get_agent_registry():
+    """Get the global agent registry instance."""
+    return agent_registry
+
+
+async def get_task_coordinator_instance():
+    """Get the global task coordinator instance."""
+    return await get_task_coordinator()
 
 
 @router.get("/")

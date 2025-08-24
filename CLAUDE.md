@@ -4,6 +4,50 @@ This file provides comprehensive guidance to Claude Code when working with the A
 
 **Critical File Preservation Note**: The `.claude/agents/*.md` files contain sub-agent definitions that must NEVER be moved or relocated - they are required to remain in place for the sub-agent system to function properly.
 
+## MCP Server Configuration (14 Servers)
+
+### Available Servers
+- **Core Development**: filesystem, git, memory, context7
+- **Code Quality**: eslint, ripgrep
+- **Database Operations**: sqlite, sqlite-secondary, postgres
+- **AI/ML Capabilities**: sequential-thinking, elevenlabs
+- **Web Operations**: fetch, playwright
+- **Local Services**: codanna-https (SSE)
+
+### Server Descriptions
+- **filesystem**: File system operations for ARES source code and agent definitions
+- **git**: Git operations for version control of agent reliability system
+- **memory**: Memory operations for agent state tracking and reliability metrics
+- **sqlite**: Primary database operations for agent behavior data and reliability scores
+- **sqlite-secondary**: Secondary database for proof-of-work validation and audit logs
+- **context7**: Context research for agent reliability patterns and best practices
+- **ripgrep**: Fast code search across ARES modules and agent behavior logic
+- **eslint**: Code quality checking for ARES web interface components
+- **fetch**: HTTP operations for external reliability validation and agent integrations
+- **sequential-thinking**: AI planning for complex reliability enforcement workflows
+- **playwright**: Web automation for testing agent interfaces and reliability dashboards
+- **postgres**: PostgreSQL operations for production-scale agent reliability tracking
+- **elevenlabs**: Text-to-speech for agent status notifications and alerts
+- **codanna-https**: Local code analysis server via SSE protocol
+  - URL: https://127.0.0.1:8443/mcp/sse
+  - Protocol: Server-Sent Events (SSE)
+  - Dependency: Requires local codanna service running
+
+### MCP Operations
+```bash
+# Install and test all 14 MCP servers
+make mcp-install && make mcp-test
+
+# Quick health check for all servers
+../workspace-infrastructure/tools/coordination/mcp-coordinator status
+
+# Comprehensive validation
+../workspace-infrastructure/tools/coordination/mcp-coordinator validate --level=standard
+
+# Export health report
+../workspace-infrastructure/tools/coordination/mcp-coordinator export
+```
+
 ## Project Overview
 
 ARES is a FastAPI-based microservice system designed to monitor, validate, and enforce reliability standards for AI agents. The system provides real-time reliability scoring, task completion verification, and proof-of-work validation for multi-agent AI systems.
@@ -700,3 +744,300 @@ uv run ares validation check --task-id <task_id>
 ---
 
 **Remember**: ARES is designed to ensure AI agent reliability through comprehensive monitoring, validation, and enforcement. Always start with @tech-lead-orchestrator for complex tasks, leverage MCP server tools for enhanced functionality, and maintain high reliability standards throughout development.
+
+## CI/CD Implementation & Testing
+
+### Deployed CI/CD Workflows
+ARES now includes a complete standardized CI/CD suite following Phase 2 deployment patterns:
+
+**Core CI/CD Features:**
+- Agent behavior testing with proof-of-work validation
+- Real-time reliability monitoring pipeline
+- MCP server integration testing (14-server ecosystem)
+- Agent coordination performance benchmarks
+- Quality gates with agent-specific metrics
+
+### Workflow Structure
+```bash
+# Environment Management
+make env-check          # Validate canonical UV environment
+make install           # Install all dependencies with quality gates
+make clean-env         # Remove non-canonical environments
+
+# Quality Gates (4-tier validation)
+make quality-gates     # Run all 4 quality gates
+make quality-gate-1    # Environment & setup validation
+make quality-gate-2    # Code quality & standards
+make quality-gate-3    # Security validation & compliance
+make quality-gate-4    # Testing & coverage validation
+
+# Agent Reliability Testing
+make test-agents       # Agent behavior validation tests
+make test-reliability  # Reliability scoring and metrics
+make test-proof-work   # Proof-of-work validation testing
+```
+
+### Project-Specific CI/CD Customizations
+
+**Agent Behavior Testing:**
+- CompletionVerifier validation with task evidence collection
+- ToolCallValidator testing for MCP server usage verification
+- TaskRollbackManager testing for failure recovery scenarios
+- ProofOfWorkCollector validation for agent work quality
+- AgentBehaviorMonitor performance pattern analysis
+
+**Reliability Enforcement Testing:**
+- Real-time reliability threshold monitoring
+- Automated quality gate enforcement validation
+- Agent coordination failure recovery testing
+- WebSocket performance under agent load
+- Multi-agent task delegation stress testing
+
+**MCP Integration Validation:**
+- 14-server ecosystem connectivity testing
+- Database operations validation (SQLite, PostgreSQL)
+- Web automation testing with Playwright
+- Search and analysis tool integration (Ripgrep)
+- Real-time communication performance testing
+
+### Quality Gates Implementation
+
+**Gate 1: Environment Validation**
+- Python 3.12 standardization compliance
+- UV canonical environment verification
+- FastAPI and SQLAlchemy setup validation
+- Redis and Celery connectivity testing
+
+**Gate 2: Code Quality & Standards**
+- Agent reliability code pattern compliance
+- FastAPI endpoint standards validation
+- SQLAlchemy model quality analysis
+- WebSocket implementation code quality
+
+**Gate 3: Security & Compliance**
+- Agent operation security scanning
+- Input validation for agent task data
+- Database access control verification
+- WebSocket security implementation testing
+
+**Gate 4: Testing & Coverage**
+- Agent reliability testing with >90% coverage
+- Integration testing for all ARES components
+- Performance testing under realistic agent loads
+- End-to-end reliability enforcement validation
+
+### Agent-Specific Testing Patterns
+
+**Proof-of-Work Validation Testing:**
+```bash
+# Test task completion verification
+make test-completion-verifier
+
+# Test tool usage validation
+make test-tool-validator
+
+# Test rollback mechanisms
+make test-rollback-manager
+
+# Test evidence collection
+make test-proof-collector
+```
+
+**Real-Time Monitoring Testing:**
+```bash
+# Test WebSocket performance
+make test-websocket-latency
+
+# Test agent status updates
+make test-status-broadcasting
+
+# Test reliability metrics
+make test-metrics-collection
+
+# Test enforcement actions
+make test-enforcement-triggers
+```
+
+### Troubleshooting CI/CD Issues
+
+**Common Agent Testing Issues:**
+```bash
+# Database connectivity issues
+make db-init           # Initialize ARES database
+make db-reset          # Reset and reinitialize
+
+# Agent monitoring failures
+make agents-status     # Check agent monitoring status
+make agents-health     # Health check for reliability system
+
+# Performance issues
+make test-performance  # Run reliability performance tests
+make analyze-bottlenecks # Identify monitoring bottlenecks
+```
+
+**Agent Reliability Debugging:**
+- Use agent reliability logs in `/logs/reliability-*.log`
+- Check WebSocket connection stability for real-time updates
+- Monitor database performance for reliability metrics storage
+- Validate proof-of-work evidence collection accuracy
+
+### Performance Standards Validation
+
+**Response Time Testing:**
+- Agent coordination APIs must respond within 200ms
+- WebSocket updates must deliver within 50ms
+- Database queries must execute within 10ms
+- Reliability calculations must complete within 100ms
+
+**Throughput Testing:**
+- System must handle 1000+ concurrent agent tasks
+- Real-time monitoring for 100+ active agents
+- Database must support 10,000+ reliability metric entries
+- WebSocket connections must support 500+ concurrent clients
+
+### Deployment Validation
+
+**Pre-Deployment Checks:**
+```bash
+make ci-check          # Pragmatic CI validation
+make ci-check-full     # Comprehensive CI with quality gates
+make deployment-check  # Agent reliability deployment readiness
+```
+
+**Post-Deployment Verification:**
+- Agent reliability monitoring activation
+- Real-time metrics collection validation
+- WebSocket performance baseline establishment
+- Proof-of-work validation system testing
+
+---
+
+## AI ASSISTANT STRICT PROHIBITIONS
+
+**NEVER CREATE WITHOUT EXPLICIT REQUEST:**
+- Monitoring dashboards, analytics dashboards, or reporting interfaces
+- Metrics collection systems or performance monitoring tools
+- Features, components, or functionality not specifically requested
+- "Comprehensive" error prevention frameworks or validation systems
+- Complex security frameworks beyond basic input validation
+- Fake user feedback, testimonials, or usage statistics
+- Completion reports claiming achievements without actual implementation
+- Files with inflated capabilities or non-existent functionality
+
+**REQUIRED BEHAVIOR:**
+- Only implement what is explicitly asked for
+- If unsure about scope, ask before creating anything
+- Focus on simple, working solutions over complex frameworks
+- Admit when something hasn't been actually implemented
+- Provide honest assessment of current state vs. claims
+
+**VIOLATION EXAMPLES TO AVOID:**
+- Creating quality_dashboard.html without being asked for a dashboard
+- Generating fake performance metrics (e.g., "7600+ files/minute improvement")
+- Building monitoring systems when asked for basic file operations
+- Adding complex validation when simple checks were requested
+- Creating completion reports with false achievement claims
+
+This prohibition applies to ALL AI assistants working on this project. Focus on the specific task requested, nothing more.
+
+
+---
+
+## MCP Server Configuration
+
+This project is configured with **Agent Orchestration Systems** MCP integration.
+AI agent orchestration and routing systems with hierarchical management
+
+### Essential MCP Servers
+
+These servers are required for core functionality:
+
+- **filesystem**: Essential file system operations and management
+- **git**: Git version control operations and repository management
+- **memory**: Core functionality
+- **sequentialthinking**: Core functionality
+
+### Recommended MCP Servers
+
+These servers enhance project capabilities:
+
+- **github**: github server functionality
+- **redis**: Enhanced functionality
+- **context7**: context7 server functionality
+
+### Optional MCP Servers
+
+These servers provide additional features:
+
+- **postgresql**: postgresql server functionality
+- **docker**: docker server functionality
+- **code-checker**: code-checker server functionality
+
+### Configuration Examples
+
+```bash
+# Install and configure MCP servers for this project
+cd /home/user01/projects/workspace-tools
+./configure-mcp.sh
+
+# Select this project and choose recommended servers
+# Project type: Agent Orchestration Systems
+```
+
+```bash
+# Required environment variables:
+export MEMORY_STORE_PATH="your_project_root/data/orchestration_memory"
+export MEMORY_MAX_SIZE="5000000"
+export MEMORY_PERSIST="true"
+export HIERARCHICAL="true"
+export THINKING_DEPTH="10"
+export CONTEXT_RETENTION="true"
+export BRANCH_TRACKING="true"
+export REDIS_URL="your_redis_url"
+export REDIS_DB="your_redis_db"
+export KEY_PREFIX="your_project_name_orchestration:"
+```
+
+### Usage Patterns
+
+```bash
+# General Operations
+"Perform file system operations safely"
+"Manage Git repository with version control"
+"Execute development workflows and testing"
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+**MCP Server Connection Issues:**
+```bash
+# Check server status
+cd /home/user01/projects/workspace-tools
+./configure-mcp.sh --test-connection
+
+# Restart problematic servers
+./configure-mcp.sh --restart-servers
+```
+
+**Environment Variable Issues:**
+```bash
+# Verify environment setup
+echo $CLAUDE_CONFIG_PATH
+cat ~/.claude.json | jq '.mcpServers'
+
+# Reload configuration
+source ~/.bashrc
+./configure-mcp.sh --reload-config
+```
+
+**WSL-Specific Issues:**
+```bash
+# Check WSL interoperability
+wsl.exe --version
+
+# Verify Node.js access
+which node && node --version
+which npm && npm --version
+```
