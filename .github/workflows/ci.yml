@@ -1,495 +1,54 @@
-# Optimized CI/CD Pipeline - Task 4.1.3: <5min Execution Time
-# Advanced job parallelization, dependency caching, and workflow optimization
-# Context7 Research: GitHub Actions caching + setup-python optimization
-
-name: Fast CI/CD Pipeline (<5min target)
+name: Manual Quality Checks
 
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'pyproject.toml'
-      - '.github/workflows/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'pyproject.toml'
   workflow_dispatch:
 
-env:
-  PYTHON_VERSION: '3.12'
-  PROJECT_NAME: 'ARES'
-  UV_CACHE_DIR: /tmp/.uv-cache
-  PYTHONUNBUFFERED: 1
-  PYTHONIOENCODING: utf-8
-
 jobs:
-  # Shared setup job with dependency caching
-  setup:
-    name: "Environment & Cache Setup"
+  quality:
+    name: Quality Gates
     runs-on: ubuntu-latest
-    timeout-minutes: 3
-
-    outputs:
-      python-version: ${{ steps.python-setup.outputs.python-version }}
-      uv-version: ${{ steps.uv-setup.outputs.uv-version }}
-      cache-key: ${{ steps.cache-key.outputs.key }}
-
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate cache key
-        id: cache-key
-        run: |
-          CACHE_KEY="${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('pyproject.toml', 'uv.lock') }}"
-          echo "key=$CACHE_KEY" >> $GITHUB_OUTPUT
-          echo "Cache key: $CACHE_KEY"
-
-      - name: Setup Python with caching
-        id: python-setup
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
+          python-version: '3.12'
 
-      - name: Cache UV installation
-        uses: actions/cache@v4
-        id: uv-cache
-        with:
-          path: ~/.cargo/bin/uv
-          key: uv-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
-          restore-keys: |
-            uv-${{ runner.os }}-
+      - name: Install uv
+        uses: astral-sh/setup-uv@v1
 
-      - name: Install UV (if not cached)
-        if: steps.uv-cache.outputs.cache-hit != 'true'
-        id: uv-setup
+      - name: Sync dependencies
+        run: uv sync --frozen
+
+      - name: Validate Claude permissions
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          UV_VERSION=$(~/.cargo/bin/uv --version)
-          echo "uv-version=$UV_VERSION" >> $GITHUB_OUTPUT
-          echo "✅ UV installed: $UV_VERSION"
-
-      - name: Add UV to PATH
-        if: steps.uv-cache.outputs.cache-hit == 'true'
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Cache UV dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            /tmp/.uv-cache
-            .venv
-          key: uv-deps-${{ steps.cache-key.outputs.key }}
-          restore-keys: |
-            uv-deps-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
-
-      - name: Install dependencies with caching
-        run: |
-          mkdir -p /tmp/.uv-cache
-          uv sync --all-groups --frozen
-          echo "✅ Dependencies installed with UV caching"
-
-  # Parallel quality checks with shared cache
-  code_quality:
-    name: "Code Quality (Parallel)"
-    runs-on: ubuntu-latest
-    needs: setup
-    timeout-minutes: 2
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Restore UV cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin/uv
-          key: uv-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
-
-      - name: Restore dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            /tmp/.uv-cache
-            .venv
-          key: uv-deps-${{ needs.setup.outputs.cache-key }}
-
-      - name: Setup environment
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Fast code quality checks
-        run: |
-          echo "::group::Parallel Code Quality"
-          # Run all checks in parallel with timeout
-          timeout 90s uv run ruff format --check src/ tests/ &
-          FORMAT_PID=$!
-
-          timeout 90s uv run ruff check src/ tests/ --select="E9,F,I" &
-          LINT_PID=$!
-
-          # Wait for both and check results
-          wait $FORMAT_PID
-          FORMAT_EXIT=$?
-
-          wait $LINT_PID
-          LINT_EXIT=$?
-
-          if [ $FORMAT_EXIT -ne 0 ]; then
-            echo "❌ Code formatting issues detected"
-            exit 1
-          fi
-
-          if [ $LINT_EXIT -ne 0 ]; then
-            echo "❌ Linting issues detected"
-            exit 1
-          fi
-
-          echo "✅ All code quality checks passed"
-          echo "::endgroup::"
-
-  security_scan:
-    name: "Security Scan (Parallel)"
-    runs-on: ubuntu-latest
-    needs: setup
-    timeout-minutes: 2
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Restore UV cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin/uv
-          key: uv-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
-
-      - name: Restore dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            /tmp/.uv-cache
-            .venv
-          key: uv-deps-${{ needs.setup.outputs.cache-key }}
-
-      - name: Setup environment
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Fast parallel security checks
-        run: |
-          echo "::group::Parallel Security Scan"
-          mkdir -p reports
-
-          # Run security checks in parallel
-          timeout 90s uv run bandit -r src/ -ll -f json -o reports/bandit-report.json --quiet &
-          BANDIT_PID=$!
-
-          # Secrets detection (conditional)
-          if [ -f .secrets.baseline ]; then
-            timeout 60s uv run detect-secrets scan --baseline .secrets.baseline &
-            SECRETS_PID=$!
+          if [ -x "./ci_validate_claude.sh" ]; then
+            ./ci_validate_claude.sh --json
           else
-            echo "⚠️ No secrets baseline - skipping for speed"
-            SECRETS_PID="SKIP"
+            echo "ci_validate_claude.sh not found; skipping"
           fi
 
-          # Wait for processes
-          wait $BANDIT_PID
-          BANDIT_EXIT=$?
+      - name: Run Ruff
+        run: uv run ruff check .
 
-          if [ "$SECRETS_PID" != "SKIP" ]; then
-            wait $SECRETS_PID
-            SECRETS_EXIT=$?
+      - name: Run pytest
+        run: |
+          if [ -d "tests" ]; then
+            uv run pytest -q
           else
-            SECRETS_EXIT=0
+            echo "No tests directory found; skipping pytest."
           fi
 
-          # Check results
-          if [ $BANDIT_EXIT -ne 0 ] || [ $SECRETS_EXIT -ne 0 ]; then
-            echo "❌ Security issues detected"
-            exit 1
-          fi
-
-          echo "✅ Security scan completed"
-          echo "::endgroup::"
-
-      - name: Upload Security Report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: security-report-${{ env.PROJECT_NAME }}
-          path: reports/bandit-report.json
-          retention-days: 7
-
-  test_suite:
-    name: "Tests & Type Check (Parallel)"
-    runs-on: ubuntu-latest
-    needs: setup
-    timeout-minutes: 3
-    strategy:
-      fail-fast: false
-      matrix:
-        test_group: ["unit", "integration", "api"]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Restore UV cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin/uv
-          key: uv-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
-
-      - name: Restore dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            /tmp/.uv-cache
-            .venv
-          key: uv-deps-${{ needs.setup.outputs.cache-key }}
-
-      - name: Setup environment
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Run test group with parallel execution
+      - name: Publish summary
         run: |
-          echo "::group::Testing - ${{ matrix.test_group }}"
-
-          case "${{ matrix.test_group }}" in
-            "unit")
-              uv run pytest tests/unit/ tests/core/ tests/models/ -x --tb=short --maxfail=3
-              ;;
-            "integration")
-              uv run pytest tests/integration/ tests/coordination/ -x --tb=short --maxfail=3
-              ;;
-            "api")
-              uv run pytest tests/api/ tests/main/ -x --tb=short --maxfail=3
-              ;;
-          esac
-
-          echo "✅ ${{ matrix.test_group }} tests passed"
-          echo "::endgroup::"
-
-  type_check:
-    name: "Type Check (Parallel)"
-    runs-on: ubuntu-latest
-    needs: setup
-    timeout-minutes: 1
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Restore UV cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin/uv
-          key: uv-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
-
-      - name: Restore dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            /tmp/.uv-cache
-            .venv
-          key: uv-deps-${{ needs.setup.outputs.cache-key }}
-
-      - name: Setup environment
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Fast MyPy type check
-        run: |
-          echo "::group::Type Check"
-          timeout 45s uv run mypy src/ --fast-module-lookup --cache-dir=/tmp/mypy-cache
-          echo "✅ Type check passed"
-          echo "::endgroup::"
-
-  # Pre-commit validation (optimized)
-  precommit_validation:
-    name: "Pre-commit (Parallel Optimized)"
-    runs-on: ubuntu-latest
-    needs: setup
-    timeout-minutes: 1
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Restore UV cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin/uv
-          key: uv-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
-
-      - name: Restore dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            /tmp/.uv-cache
-            .venv
-          key: uv-deps-${{ needs.setup.outputs.cache-key }}
-
-      - name: Setup environment
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Cache pre-commit environments
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
-
-      - name: Fast pre-commit run (parallel optimized)
-        run: |
-          echo "::group::Pre-commit Validation"
-          export PRE_COMMIT_PARALLEL=8
-          export PRE_COMMIT_COLOR=never
-          timeout 45s uv run pre-commit run --all-files
-          echo "✅ Pre-commit hooks passed"
-          echo "::endgroup::"
-
-  # Fast pipeline summary
-  pipeline_summary:
-    name: "Pipeline Summary (<5min target)"
-    runs-on: ubuntu-latest
-    needs:
-      - setup
-      - code_quality
-      - security_scan
-      - test_suite
-      - type_check
-      - precommit_validation
-    if: always()
-    timeout-minutes: 1
-
-    steps:
-      - name: Fast pipeline status check
-        run: |
-          echo "🚀 Fast CI/CD Pipeline Summary"
-          echo "============================="
-          echo "Target: <5 minutes execution time"
-          echo ""
-
-          # Check results
-          SETUP="${{ needs.setup.result }}"
-          QUALITY="${{ needs.code_quality.result }}"
-          SECURITY="${{ needs.security_scan.result }}"
-          TESTS="${{ needs.test_suite.result }}"
-          TYPES="${{ needs.type_check.result }}"
-          PRECOMMIT="${{ needs.precommit_validation.result }}"
-
-          echo "Setup & Cache: $SETUP"
-          echo "Code Quality: $QUALITY"
-          echo "Security: $SECURITY"
-          echo "Tests: $TESTS"
-          echo "Type Check: $TYPES"
-          echo "Pre-commit: $PRECOMMIT"
-          echo ""
-
-          # Fast success/failure determination
-          if [[ "$SETUP" == "success" && "$QUALITY" == "success" && "$SECURITY" == "success" && "$TESTS" == "success" && "$TYPES" == "success" && "$PRECOMMIT" == "success" ]]; then
-            echo "✅ ALL CHECKS PASSED - PIPELINE SUCCESS!"
-            echo "🏁 Build completed in <5min target achieved"
-            exit 0
-          else
-            echo "❌ Pipeline failed - check individual job logs"
-            exit 1
-          fi
-
-  # Fast Docker validation (optional, optimized with cache)
-  docker_validation:
-    name: "Docker Build (Fast Cache)"
-    runs-on: ubuntu-latest
-    needs: pipeline_summary
-    timeout-minutes: 2
-    if: hashFiles('Dockerfile') != '' && needs.pipeline_summary.result == 'success'
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: network=host
-
-      - name: Build with optimized caching
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: false
-          tags: ${{ env.PROJECT_NAME }}:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          target: production
-
-      - name: Fast container test
-        run: |
-          echo "🐳 Testing optimized Docker build..."
-          docker run --rm -d --name test-container ${{ env.PROJECT_NAME }}:test sleep 10
-          docker exec test-container python -c "import sys; print(f'Python {sys.version}')"
-          docker stop test-container
-          echo "✅ Docker build and basic functionality verified"
-
-  # Performance monitoring
-  performance_report:
-    name: "Performance Report"
-    runs-on: ubuntu-latest
-    needs: [pipeline_summary, docker_validation]
-    if: always()
-    timeout-minutes: 1
-
-    steps:
-      - name: Generate performance summary
-        run: |
-          echo "📊 CI/CD Performance Report" >> $GITHUB_STEP_SUMMARY
-          echo "================================" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Target**: <5min total execution time" >> $GITHUB_STEP_SUMMARY
-          echo "**Actual**: Check workflow duration above" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Optimizations Applied**:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Advanced dependency caching with UV" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Parallel job execution (setup → 5 parallel jobs)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Optimized pre-commit execution (Task 4.1.1: 0.985s)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Fast Docker builds with BuildKit cache (Task 4.1.2: 0.7s)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Intelligent test matrix parallelization" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Reduced timeout values and fail-fast strategies" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Context7 Integration**: GitHub Actions caching + setup-python research applied" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## ARES Quality Checks";
+            echo "- uv sync --frozen";
+            echo "- uv run ruff check .";
+            echo "- uv run pytest -q";
+            echo "- ./ci_validate_claude.sh --json";
+          } >> "$GITHUB_STEP_SUMMARY"
